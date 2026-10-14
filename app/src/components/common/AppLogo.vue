@@ -1,25 +1,25 @@
+```vue
 <template>
   <span class="inline-flex items-center gap-2">
     <img
-      src="/logo-developers-mania.png"
+      src="/mediqueue-logo.png"
       alt=""
-      :class="['w-auto', SIZES[size]]"
+      :class="['w-auto object-contain', SIZES[size]]"
       width="200"
       height="200"
       decoding="async"
     />
-    <span v-if="withWordmark" :class="['font-semibold', TEXT[size]]">
+
+    <span
+      v-if="withWordmark"
+      :class="['font-bold tracking-tight text-[#102f3b]', TEXT[size]]"
+    >
       {{ name }}
     </span>
   </span>
 </template>
 
 <script setup lang="ts">
-/**
- * The app mark. Swap the image in public/ to rebrand - nothing else references
- * it, and `alt` is empty on purpose because the wordmark beside it carries the
- * name for screen readers.
- */
 type LogoSize = "sm" | "md" | "lg";
 
 withDefaults(
@@ -28,7 +28,11 @@ withDefaults(
     size?: LogoSize;
     withWordmark?: boolean;
   }>(),
-  { name: "Vue Template TS", size: "md", withWordmark: true },
+  {
+    name: "MediQueue",
+    size: "md",
+    withWordmark: true,
+  },
 );
 
 const SIZES: Record<LogoSize, string> = {
@@ -36,9 +40,11 @@ const SIZES: Record<LogoSize, string> = {
   md: "h-8",
   lg: "h-10",
 };
+
 const TEXT: Record<LogoSize, string> = {
   sm: "text-sm",
   md: "text-lg",
   lg: "text-xl",
 };
 </script>
+```

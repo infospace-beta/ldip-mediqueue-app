@@ -1,33 +1,43 @@
-<template>
-  <footer
-    class="border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900"
-  >
-    <div
-      class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm sm:flex-row sm:px-6"
-    >
-      <div class="muted flex items-center gap-2">
-        <AppLogo size="sm" :with-wordmark="false" />
-        <span>&copy; {{ currentYear }} Developers Mania</span>
-      </div>
 
-      <nav aria-label="Footer" class="muted flex gap-4">
+<template>
+  <footer class="border-t border-[#dce9e7] bg-[#f0f8f6]">
+    <div
+      class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-5 py-6 sm:flex-row sm:px-8 lg:px-12"
+    >
+      <RouterLink
+        :to="{ name: ROUTE_NAMES.landing }"
+        class="flex items-center gap-2 rounded-lg"
+        aria-label="MediQueue home"
+      >
+        <AppLogo size="sm" :with-wordmark="false" />
+        <span class="text-sm font-semibold text-[#102f3b]">
+          © {{ currentYear }} MediQueue
+        </span>
+      </RouterLink>
+
+      <nav
+        aria-label="Footer navigation"
+        class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-[#536c72]"
+      >
         <RouterLink
-          :to="{ name: ROUTE_NAMES.about }"
-          class="hover:text-gray-900 hover:underline dark:hover:text-white"
+          :to="{ name: ROUTE_NAMES.landing }"
+          class="transition hover:text-[#008c76] hover:underline"
         >
-          About
+          Home
         </RouterLink>
+
         <RouterLink
-          :to="{ name: ROUTE_NAMES.contact }"
-          class="hover:text-gray-900 hover:underline dark:hover:text-white"
+          to="/patient/appointments"
+          class="transition hover:text-[#008c76] hover:underline"
         >
-          Contact
+          Appointments
         </RouterLink>
+
         <RouterLink
-          :to="{ name: ROUTE_NAMES.faq }"
-          class="hover:text-gray-900 hover:underline dark:hover:text-white"
+          to="/patient/emergency"
+          class="transition hover:text-[#008c76] hover:underline"
         >
-          FAQ
+          Emergency assistance
         </RouterLink>
       </nav>
     </div>
