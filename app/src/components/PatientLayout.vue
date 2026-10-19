@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import '../assets/styles/patient-portal.css'
 import Sidebar from './Sidebar.vue'
 import TopNavbar from './TopNavbar.vue'
 
@@ -11,9 +12,10 @@ const title = computed(() => route.meta.title || 'Patient portal')
 
 <template>
   <div class="app-shell">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <Sidebar :open="mobileMenuOpen" @close="mobileMenuOpen = false" />
     <div class="main-shell">
-      <TopNavbar :title="title" @toggle-menu="mobileMenuOpen = !mobileMenuOpen" />
+      <TopNavbar :title="title" :menu-open="mobileMenuOpen" @toggle-menu="mobileMenuOpen = !mobileMenuOpen" />
       <main class="page-content" id="main-content">
         <RouterView v-slot="{ Component, route: activeRoute }">
           <Transition name="page-fade" mode="out-in"><component :is="Component" :key="activeRoute.path" /></Transition>

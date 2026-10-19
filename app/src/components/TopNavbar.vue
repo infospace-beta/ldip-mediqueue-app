@@ -4,7 +4,7 @@ import { Bell, CalendarDays, ChevronDown, Clock3, Info, LogOut, Menu, Search, Se
 import { useRouter } from 'vue-router'
 import { notifications, patient, unreadCount } from '../data/patient'
 
-const props = defineProps({ title: String })
+const props = defineProps({ title: String, menuOpen: Boolean })
 defineEmits(['toggle-menu'])
 const router = useRouter()
 const search = ref('')
@@ -29,18 +29,17 @@ function markRead(item) {
 
 <template>
   <header class="topbar">
-    <button class="icon-button mobile-menu-trigger" type="button" aria-label="Open navigation" @click="$emit('toggle-menu')"><Menu :size="21" /></button>
+    <button class="icon-button mobile-menu-trigger" type="button" :aria-label="props.menuOpen ? 'Close navigation' : 'Open navigation'" aria-controls="patient-sidebar" :aria-expanded="props.menuOpen" @click="$emit('toggle-menu')"><Menu :size="21" /></button>
     <div class="topbar-heading">
       <p class="greeting">{{ pageTitle || 'Patient Dashboard' }}</p>
       <p class="topbar-date">Welcome back, {{ patient.name || 'Patient' }}</p>
     </div>
     <form class="search-box" role="search" @submit.prevent="searchSubmit">
-      <Search :size="17" /><input v-model="search" aria-label="Search hospitals and services" placeholder="Search hospitals, services..." /><kbd>âŒ˜ K</kbd>
-    </form>
+      <Search :size="17" /><input v-model="search" aria-label="Search hospitals and services" placeholder="Search hospitals, services..." />    </form>
     <div class="topbar-actions">
       <div class="popover-anchor">
-        <button class="icon-button notification-trigger" type="button" aria-label="Notifications" :aria-expanded="openMenu === 'notifications'" @click="openMenu = openMenu === 'notifications' ? '' : 'notifications'">
-          <Bell :size="19" /><span class="notification-dot">{{ unread }}</span>
+        <button class="icon-button notification-trigger" type="button" :aria-label="unread ? `Notifications, ${unread} unread` : 'Notifications'" :aria-expanded="openMenu === 'notifications'" @click="openMenu = openMenu === 'notifications' ? '' : 'notifications'">
+          <Bell :size="19" /><span v-if="unread" class="notification-dot">{{ unread }}</span>
         </button>
         <div v-if="openMenu === 'notifications'" class="top-popover notification-popover">
           <div class="popover-heading"><strong>Notifications</strong><RouterLink to="/patient/notifications" @click="openMenu = ''">View all</RouterLink></div>
@@ -64,6 +63,4 @@ function markRead(item) {
     </div>
   </header>
 </template>
-
-
 

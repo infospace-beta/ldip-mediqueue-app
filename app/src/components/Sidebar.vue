@@ -33,7 +33,7 @@ function logout() {
 
 <template>
   <div v-if="open" class="mobile-scrim" @click="emit('close')"></div>
-  <aside class="sidebar" :class="{ 'sidebar-open': open }" aria-label="Main navigation">
+  <aside id="patient-sidebar" class="sidebar" :class="{ 'sidebar-open': open }" aria-label="Main navigation">
     <div class="brand-row">
       <RouterLink class="brand" to="/patient/dashboard" @click="emit('close')">
         <img class="brand-mark brand-image" :src="'/Mediqueue-logo.jpeg'" alt="" />
@@ -44,15 +44,14 @@ function logout() {
 
     <div class="sidebar-label">PATIENT PORTAL</div>
     <nav class="sidebar-nav" aria-label="Patient dashboard">
-      <RouterLink v-for="item in primary" :key="item.label" :to="item.to" class="nav-link" :class="{ active: isActive(item) }" @click="emit('close')">
+      <RouterLink v-for="item in primary" :key="item.label" :to="item.to" class="nav-link" :class="{ active: isActive(item) }" :aria-current="isActive(item) ? 'page' : undefined" @click="emit('close')">
         <component :is="item.icon" :size="18" :stroke-width="1.8" /><span>{{ item.label }}</span>
-        <span v-if="item.label === 'My queue'" class="nav-count">0</span>
       </RouterLink>
     </nav>
 
     <div class="sidebar-label sidebar-label-spaced">YOUR CARE</div>
     <nav class="sidebar-nav" aria-label="Patient account">
-      <RouterLink v-for="item in care" :key="item.label" :to="item.to" class="nav-link" :class="{ active: isActive(item) }" @click="emit('close')">
+      <RouterLink v-for="item in care" :key="item.label" :to="item.to" class="nav-link" :class="{ active: isActive(item) }" :aria-current="isActive(item) ? 'page' : undefined" @click="emit('close')">
         <component :is="item.icon" :size="18" :stroke-width="1.8" /><span>{{ item.label }}</span>
       </RouterLink>
     </nav>
@@ -69,4 +68,3 @@ function logout() {
     </div>
   </aside>
 </template>
-
