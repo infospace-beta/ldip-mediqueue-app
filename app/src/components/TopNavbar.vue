@@ -1,12 +1,14 @@
-﻿<script setup>
+<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Bell, CalendarDays, ChevronDown, Clock3, Info, LogOut, Menu, Search, Settings, UserRound } from '@lucide/vue'
 import { useRouter } from 'vue-router'
 import { notifications, patient, unreadCount } from '../data/patient'
+import { useAuthStore } from '../stores'
 
-const props = defineProps({ title: String, menuOpen: Boolean })
-defineEmits(['toggle-menu'])
+const props = defineProps<{ title?: string; menuOpen?: boolean }>()
+defineEmits<{ (event: 'toggle-menu'): void }>()
 const router = useRouter()
+const auth = useAuthStore()
 const search = ref('')
 const openMenu = ref('')
 const unread = computed(() => unreadCount())
@@ -20,11 +22,16 @@ function searchSubmit() {
   router.push(destination)
   search.value = ''
 }
-function markRead(item) {
+function markRead(item: (typeof notifications)[number]) {
   item.unread = false
   openMenu.value = ''
   router.push('/patient/notifications')
-}  
+}
+function logout() {
+  auth.logout()
+  openMenu.value = ''
+  router.push('/')
+}
 </script>
 
 <template>
@@ -57,10 +64,9 @@ function markRead(item) {
         <div v-if="openMenu === 'profile'" class="top-popover profile-popover">
           <RouterLink to="/patient/profile" @click="openMenu = ''"><UserRound :size="16" /> My profile</RouterLink>
           <RouterLink to="/patient/settings" @click="openMenu = ''"><Settings :size="16" /> Settings</RouterLink>
-          <button type="button" @click="openMenu = ''"><LogOut :size="16" /> Log out</button>
+          <button type="button" @click="logout"><LogOut :size="16" /> Log out</button>
         </div>
       </div>
     </div>
   </header>
 </template>
-

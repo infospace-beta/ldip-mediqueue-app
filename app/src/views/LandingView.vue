@@ -1,27 +1,25 @@
 <template>
   <div class="overflow-hidden bg-white text-[#102f3b]">
-    <section class="relative isolate bg-[#f2f8f7]">
+    <section class="relative isolate bg-[#192d50]">
       <div
-        class="absolute -right-48 -top-48 -z-10 h-[34rem] w-[34rem] rounded-full bg-[#dff1ec] blur-3xl"
+        class="absolute -right-48 -top-48 -z-10 h-[34rem] w-[34rem] rounded-full bg-[#234165] blur-3xl"
         aria-hidden="true"
       ></div>
       <div
         class="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16 lg:px-12 lg:py-24"
       >
         <div>
-          <p
-            class="inline-flex items-center gap-2 rounded-full border border-[#cce4df] bg-white px-4 py-2 text-sm font-semibold text-[#087f6b]"
-          >
-            <HeartPulse :size="17" aria-hidden="true" />
-            Care, with more clarity
+          <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#c5d5df]">
+            <span class="h-2 w-2 rounded-full bg-[#22b8ad]" aria-hidden="true"></span>
+            Smart queues. Clearer care.
           </p>
           <h1
-            class="mt-6 max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight text-[#102f3b] sm:text-5xl lg:text-6xl"
+            class="mt-6 max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl"
           >
-            A clearer way to navigate
-            <span class="text-[#008c76]">your care.</span>
+            A clearer path to care.
+            <span class="text-[#22b8ad]">Queue information, in one place.</span>
           </h1>
-          <p class="mt-6 max-w-xl text-base leading-8 text-[#536c72] sm:text-lg">
+          <p class="mt-6 max-w-xl text-base leading-8 text-[#d0dfdf] sm:text-lg">
             MediQueue brings the next steps in a hospital visit into focus.
             Find queue and appointment services, then keep your care details
             together in one place.
@@ -29,19 +27,19 @@
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             <RouterLink
               to="/patient/join-queue"
-              class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#087f6b] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-[#066c5c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
+              class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#087f6b] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-[#066c5c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               Get started
               <ArrowRight :size="18" aria-hidden="true" />
             </RouterLink>
             <RouterLink
               :to="{ name: ROUTE_NAMES.login }"
-              class="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#b9d1cc] bg-white px-6 py-3 font-semibold text-[#102f3b] transition hover:bg-[#f7fbfa] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
+              class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 bg-transparent px-6 py-3 font-semibold text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              Sign in
+              Login
             </RouterLink>
           </div>
-          <p class="mt-5 max-w-lg text-sm leading-6 text-[#536c72]">
+          <p class="mt-5 max-w-lg text-sm leading-6 text-[#c5d5df]">
             Queue and appointment services depend on information made available
             by your care provider.
           </p>
@@ -49,11 +47,11 @@
 
         <div class="relative mx-auto w-full max-w-xl">
           <div
-            class="absolute -inset-5 rounded-[2.5rem] bg-[#acd9cd]/50 blur-2xl"
+            class="absolute -inset-5 rounded-[2.5rem] bg-[#22b8ad]/20 blur-2xl"
             aria-hidden="true"
           ></div>
           <div
-            class="relative overflow-hidden rounded-[1.75rem] border border-[#d8e7e3] bg-white p-5 shadow-[0_24px_70px_-36px_rgba(16,47,59,0.36)] sm:p-7"
+            class="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#22385d] p-5 shadow-[0_24px_70px_-36px_rgba(0,0,0,0.7)] sm:p-7"
             role="img"
             aria-label="Illustration of a patient speaking with a healthcare professional above a non-live preview of queue and appointment information"
           >
@@ -113,16 +111,16 @@
                   <HeartPulse :size="23" />
                 </span>
                 <div>
-                  <p class="text-sm font-semibold text-[#102f3b]">
+                  <p class="text-sm font-semibold text-white">
                     Your care overview
                   </p>
-                  <p class="mt-1 text-xs text-[#71878b]">
+                  <p class="mt-1 text-xs text-[#c5d5df]">
                     A simple place to start
                   </p>
                 </div>
               </div>
               <span
-                class="rounded-full bg-[#f2f8f7] px-3 py-1.5 text-xs font-medium text-[#536c72]"
+                class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-[#d0dfdf]"
               >
                 Preview
               </span>
@@ -177,7 +175,7 @@
                 </div>
               </div>
             </div>
-            <p class="mt-4 flex items-center justify-center gap-2 text-center text-xs leading-5 text-[#71878b]">
+            <p class="mt-4 flex items-center justify-center gap-2 text-center text-xs leading-5 text-[#c5d5df]">
               <Info :size="15" aria-hidden="true" />
               An interface preview, not live queue data.
             </p>

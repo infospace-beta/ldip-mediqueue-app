@@ -1,9 +1,12 @@
 <template>
-  <BaseCard class="w-full max-w-md">
+  <BaseCard class="auth-form-card w-full">
     <template #header>
-      <div>
-        <h1 class="text-lg font-semibold">Sign in</h1>
-        <p class="muted text-sm">Use your account to continue</p>
+      <div class="space-y-1">
+        <p class="auth-eyebrow">Patient access</p>
+        <h1 class="auth-heading">Welcome back</h1>
+        <p class="auth-supporting">
+          Sign in to check the queue and appointment information for your care.
+        </p>
       </div>
     </template>
 
@@ -11,8 +14,10 @@
       <BaseInput
         id="login-email"
         v-model="formData.email"
-        label="Email"
+        label="Email address"
         type="email"
+        autocomplete="email"
+        placeholder="you@example.com"
         :errors="v$.email.$errors"
       />
       <BaseInput
@@ -20,21 +25,42 @@
         v-model="formData.password"
         label="Password"
         type="password"
+        autocomplete="current-password"
+        :show-password-toggle="true"
         :errors="v$.password.$errors"
       />
 
-      <p v-if="auth.error" class="text-sm text-red-600" role="alert">
+      <p
+        v-if="auth.error"
+        class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+        role="alert"
+      >
         {{ auth.error }}
       </p>
 
-      <BaseButton type="submit" block :loading="auth.isLoading">
+      <BaseButton
+        type="submit"
+        block
+        class="auth-submit"
+        :loading="auth.isLoading"
+        :disabled="auth.isLoading"
+      >
         Sign in
       </BaseButton>
+
+      <p class="text-center text-sm">
+        New to MediQueue?
+        <RouterLink :to="{ name: ROUTE_NAMES.signup }" class="auth-link">
+          Create an account
+        </RouterLink>
+      </p>
     </form>
 
     <template #footer>
-      <p class="muted text-xs">
-        Demo credentials: <code>test@gmail.com</code> / <code>test</code>
+      <p class="auth-note">
+        Local demo credentials (with <code>VITE_MODE=local</code>):
+        <code class="font-medium text-slate-800">test@gmail.com</code> /
+        <code class="font-medium text-slate-800">test</code>
       </p>
     </template>
   </BaseCard>
@@ -42,7 +68,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import useVuelidate from "@vuelidate/core";
 import { required, email, minLength } from "@vuelidate/validators";
 import BaseCard from "@/components/ui/BaseCard.vue";
@@ -74,6 +100,8 @@ onMounted(() => {
 
 /**Validate, log in, then continue to wherever the guard came from */
 const onSubmit = async () => {
+  if (auth.isLoading) return;
+
   const isValid = await v$.value.$validate();
   if (!isValid) return;
 

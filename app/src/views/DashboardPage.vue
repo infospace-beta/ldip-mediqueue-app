@@ -1,16 +1,25 @@
 ﻿<script setup>
 import { ArrowRight, Bell, CalendarDays, Clock3, MapPin, TicketCheck } from '@lucide/vue'
 import { appointments, notifications, patient, queue, unreadCount } from '../data/patient'
+import patientCareImage from '../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.jpg'
 </script>
 
 <template>
   <div class="dashboard-page">
     <section class="welcome-strip">
-      <div>
+      <div class="welcome-copy">
         <span class="eyebrow">PATIENT PORTAL</span>
-        <h1>{{ patient.name ? `Welcome, ${patient.name}` : 'Welcome to your care dashboard' }}</h1>
-        <p>Review your queue and appointment information, or choose a next step.</p>
+        <h1>{{ patient.name ? `Welcome, ${patient.name}` : 'Your care at a glance' }}</h1>
+        <p>Check the queue and appointment information available in this session, or choose a next step.</p>
       </div>
+      <img
+        class="dashboard-welcome-image"
+        :src="patientCareImage"
+        alt="A nurse caring for a patient with a family member nearby"
+        width="176"
+        height="112"
+        decoding="async"
+      />
     </section>
 
     <div class="dashboard-main-grid">
@@ -18,11 +27,11 @@ import { appointments, notifications, patient, queue, unreadCount } from '../dat
         <section class="panel queue-overview" aria-labelledby="queue-heading">
           <div class="panel-header">
             <div>
-              <span class="eyebrow">QUEUE</span>
+              <span class="eyebrow">QUEUE STATUS</span>
               <h2 id="queue-heading">Current queue</h2>
             </div>
             <RouterLink v-if="queue.active" class="text-link" to="/patient/queue">
-              Queue details <ArrowRight :size="15" aria-hidden="true" />
+              View queue <ArrowRight :size="15" aria-hidden="true" />
             </RouterLink>
           </div>
 
@@ -111,8 +120,11 @@ import { appointments, notifications, patient, queue, unreadCount } from '../dat
             </div>
             <Bell :size="18" aria-hidden="true" />
           </div>
-          <p v-if="notifications.length">
+          <p v-if="notifications.length && unreadCount()">
             {{ unreadCount() }} unread {{ unreadCount() === 1 ? 'notification' : 'notifications' }}.
+          </p>
+          <p v-else-if="notifications.length" class="supporting-copy">
+            No unread notifications among {{ notifications.length }} available {{ notifications.length === 1 ? 'update' : 'updates' }}.
           </p>
           <p v-else class="supporting-copy">
             No notification information is available in this session.
@@ -123,10 +135,10 @@ import { appointments, notifications, patient, queue, unreadCount } from '../dat
         </section>
 
         <nav class="panel quick-actions" aria-label="Quick actions">
-          <span class="eyebrow">QUICK ACTIONS</span>
-          <RouterLink to="/patient/join-queue">Join a queue <ArrowRight :size="15" aria-hidden="true" /></RouterLink>
-          <RouterLink to="/patient/appointments">Appointments <ArrowRight :size="15" aria-hidden="true" /></RouterLink>
+          <span class="eyebrow">YOUR CARE</span>
+          <RouterLink to="/patient/history">Medical history <ArrowRight :size="15" aria-hidden="true" /></RouterLink>
           <RouterLink to="/patient/profile">My profile <ArrowRight :size="15" aria-hidden="true" /></RouterLink>
+          <RouterLink to="/patient/settings">Settings <ArrowRight :size="15" aria-hidden="true" /></RouterLink>
           <RouterLink to="/patient/emergency">Emergency information <ArrowRight :size="15" aria-hidden="true" /></RouterLink>
         </nav>
       </aside>

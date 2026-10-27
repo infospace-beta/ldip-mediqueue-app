@@ -1,25 +1,56 @@
-﻿<script setup>
-import { computed, ref } from 'vue'
-import { ArrowRight, HeartPulse, ShieldCheck, Siren } from '@lucide/vue'
-import { emergencyRequests } from '../data/patient'
-import StatusBadge from '../components/StatusBadge.vue'
-
-const requestPrepared = ref(false)
-const requestCount = computed(() => emergencyRequests.length)
-function prepareRequest() {
-  requestPrepared.value = true
-}
+<script setup>
+import { ArrowRight, HeartPulse, ShieldAlert, ShieldCheck, Siren } from '@lucide/vue'
 </script>
 
 <template>
-  <div class="section-page">
-    <div class="page-heading"><div><span class="eyebrow">URGENT CARE</span><h1>Emergency Assistance</h1><p>Emergency Requests: {{ requestCount }}</p></div><StatusBadge status="Waiting" /></div>
-    <section class="emergency-banner"><span class="emergency-banner-icon"><HeartPulse :size="25" /></span><div><span class="eyebrow">EMERGENCY STATUS</span><h2>No active request</h2><p>Your emergency request status will appear here when connected.</p></div><StatusBadge status="Waiting" /></section>
-    <div class="emergency-content-grid">
-      <section class="panel emergency-contact-panel"><div class="panel-header"><div><span class="eyebrow">EMERGENCY ASSISTANCE</span><h2>Request help</h2></div><span class="contact-shield"><ShieldCheck :size="19" /></span></div><p class="panel-subtitle">This prototype does not contact emergency services. Connect the emergency API before using this feature for care.</p><button class="emergency-call-button" type="button" @click="prepareRequest"><span><Siren :size="20" /></span><span><strong>Request Emergency Assistance</strong><small>Emergency requests: {{ requestCount }}</small></span><ArrowRight :size="17" /></button><output v-if="requestPrepared" class="form-message form-success">Emergency request control is ready. No request has been sent.</output><p class="emergency-disclaimer"><Siren :size="15" /> If you are in immediate danger, contact local emergency services directly.</p></section>
-      <section class="panel emergency-location-panel"><span class="eyebrow">REQUEST SUMMARY</span><h2>Emergency status</h2><p><ShieldCheck :size="15" /> No active request</p><div class="emergency-summary-list"><div><span>Emergency Requests</span><strong>{{ requestCount }}</strong></div><div><span>Request status</span><StatusBadge status="Waiting" /></div><div><span>Hospital</span><strong>â€”</strong></div><div><span>Department</span><strong>â€”</strong></div></div><RouterLink class="button button-secondary button-full" to="/patient/join-queue">Join a queue <ArrowRight :size="16" /></RouterLink></section>
+  <div class="section-page emergency-page">
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">EMERGENCY INFORMATION</span>
+        <h1>Emergency assistance</h1>
+        <p>Important information about getting urgent help.</p>
+      </div>
     </div>
-    <section class="panel emergency-status-panel"><div class="status-pulse"><span></span><span></span><ShieldCheck :size="19" /></div><div><strong>No active emergency request</strong><p>Request status will update when the emergency service is connected.</p></div><StatusBadge status="Waiting" /></section>
+
+    <section class="emergency-alert" aria-labelledby="emergency-alert-heading">
+      <span class="emergency-alert-icon"><ShieldAlert :size="23" aria-hidden="true" /></span>
+      <div>
+        <h2 id="emergency-alert-heading">Need immediate help?</h2>
+        <p>If you may be in immediate danger or need urgent medical care, contact your local emergency services directly.</p>
+      </div>
+    </section>
+
+    <div class="emergency-content-grid">
+      <section class="panel emergency-contact-panel" aria-labelledby="emergency-service-heading">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">MEDIQUEUE SERVICE STATUS</span>
+            <h2 id="emergency-service-heading">Emergency requests</h2>
+          </div>
+          <span class="contact-shield"><HeartPulse :size="20" aria-hidden="true" /></span>
+        </div>
+        <p class="emergency-service-copy">
+          Emergency dispatch is not connected in this prototype. MediQueue cannot send a request to responders or emergency services.
+        </p>
+        <p class="emergency-service-status" role="status">
+          <ShieldCheck :size="17" aria-hidden="true" />
+          No emergency service is connected. No request has been sent.
+        </p>
+        <p class="emergency-disclaimer">
+          <Siren :size="16" aria-hidden="true" />
+          <span>Do not use this page to seek emergency dispatch. Contact local emergency services directly.</span>
+        </p>
+      </section>
+
+      <aside class="panel emergency-queue-note">
+        <span class="emergency-note-icon"><ArrowRight :size="18" aria-hidden="true" /></span>
+        <span class="eyebrow">NON-EMERGENCY CARE</span>
+        <h2>Looking for routine care?</h2>
+        <p>Use the queue form to prepare a non-emergency care request. It is not a substitute for emergency services.</p>
+        <RouterLink class="button button-primary" to="/patient/join-queue">
+          Go to Join Queue <ArrowRight :size="16" aria-hidden="true" />
+        </RouterLink>
+      </aside>
+    </div>
   </div>
 </template>
-

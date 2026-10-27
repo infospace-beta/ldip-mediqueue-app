@@ -40,6 +40,20 @@ describe("route table", () => {
     expect(byName(ROUTE_NAMES.login)?.meta?.guestOnly).toBe(true);
   });
 
+  it("registers signup as a guest-only auth page", () => {
+    const signup = byName(ROUTE_NAMES.signup);
+
+    expect(signup?.path).toBe("/signup");
+    expect(signup?.meta?.guestOnly).toBe(true);
+    expect(signup?.meta?.layout).toBe("auth");
+  });
+
+  it("requires authentication for responder workspace routes", () => {
+    const responderRoute = routes.find((route) => route.path === "/responder");
+
+    expect(responderRoute?.meta?.requiresAuth).toBe(true);
+  });
+
   it("lazy-loads every view so each page is its own chunk", () => {
     routes.forEach((route) => {
       expect(typeof route.component, `${String(route.name)} is not lazy`).toBe(

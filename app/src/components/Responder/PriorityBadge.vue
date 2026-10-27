@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 defineProps({ priority: { type: String, required: true } })
 </script>
 

@@ -51,6 +51,10 @@ Only `VITE_`-prefixed variables reach the browser bundle, so nothing secret belo
 
 Demo credentials in local mode: `test@gmail.com` / `test`.
 
+The `/signup` page validates the form but does not create an account. There is no
+registration service or registration endpoint in this project; do not treat a valid
+form submission as successful registration.
+
 ## Project structure
 
 ```
@@ -60,7 +64,7 @@ app/src/
 │   ├── ui/          BaseButton, BaseInput, BaseCard, BaseBadge, BaseModal,
 │   │                BaseSpinner, State{Loading,Empty,Error} - props in, events out
 │   ├── common/      AppHeader, AppFooter, AppLogo - app chrome, may read stores
-│   ├── auth/        LoginForm
+│   ├── auth/        LoginForm and its tests
 │   ├── posts/       PostList, PostCard
 │   └── jobs/        JobList
 ├── composables/     usePosts, useJobs, useContactForm - state + actions
@@ -74,17 +78,17 @@ app/src/
 ├── stores/          Pinia stores; example.store.js is the reference pattern
 ├── types/           models.ts (API shapes) and router.d.ts (typed route meta)
 ├── utils/           format.ts, errors.ts - pure functions, no Vue, no network
-└── views/           one component per route, kept thin
+└── views/           one component per route, kept thin (including SignupView)
 ```
 
 ### Public vs guarded routes
 
-`router/routes.ts` groups routes by who can reach them, and `meta.requiresAuth` is the
-only switch: leave it off and the page is public.
+`router/routes.ts` groups routes by who can reach them. `meta.requiresAuth` protects a
+route, while `meta.guestOnly` keeps signed-in users off the login and signup pages.
 
-| Public                                         | Needs a session                   |
-| ---------------------------------------------- | --------------------------------- |
-| `/` `/about` `/faq` `/contact` `/posts` `/jobs` | `/home` `/api` `/posts/:id` `/jobs/:id` |
+| Public                                          | Guests only        | Needs a session                                        |
+| ----------------------------------------------- | ------------------ | ------------------------------------------------------ |
+| `/` `/about` `/faq` `/contact` `/posts` `/jobs` | `/login` `/signup` | `/home` `/api` `/posts/:id` `/jobs/:id` `/responder/*` |
 
 The list pages are public while their detail pages are not - the "browse freely, sign in
 to go deeper" split. Opening a detail page signed out redirects to `/login?returnUrl=...`

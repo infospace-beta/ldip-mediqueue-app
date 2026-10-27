@@ -1,5 +1,9 @@
-<script setup>
-defineProps({ title: String, description: String, icon: Object })
+<script setup lang="ts">
+defineProps({
+  title: String,
+  description: String,
+  icon: { type: [Object, Function], default: null },
+})
 </script>
 
 <template>

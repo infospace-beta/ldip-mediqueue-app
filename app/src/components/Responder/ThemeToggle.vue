@@ -1,4 +1,4 @@
-﻿<script setup>
+﻿ <script setup lang="ts">
 import { Moon, Sun } from '@lucide/vue'
 defineProps({ dark: Boolean })
 defineEmits(['toggle'])
@@ -9,4 +9,3 @@ defineEmits(['toggle'])
     <Sun v-if="dark" :size="18" /><Moon v-else :size="18" />
   </button>
 </template>
-

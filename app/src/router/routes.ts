@@ -58,6 +58,16 @@ export const routes: RouteRecordRaw[] = [
     },
   },
 
+  {
+    path: "/signup",
+    name: ROUTE_NAMES.signup,
+    component: () => import("@/views/SignupView.vue"),
+    meta: {
+      guestOnly: true,
+      layout: "auth",
+    },
+  },
+
   // =====================================================
   // EXISTING TEMPLATE AUTHENTICATED PAGES
   // =====================================================
@@ -202,6 +212,7 @@ export const routes: RouteRecordRaw[] = [
     component: () => import("@/views/ResponderDashboard.vue"),
     meta: {
       layout: "blank",
+      requiresAuth: true,
     },
     children: [
       {

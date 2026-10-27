@@ -14,6 +14,7 @@ export const ROUTE_NAMES = {
 
   /**Guests only - signed-in users get bounced away */
   login: "login",
+  signup: "signup",
 
   /**Requires a session */
   home: "home",
