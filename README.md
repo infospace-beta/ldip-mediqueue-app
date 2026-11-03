@@ -42,14 +42,29 @@ npm run mock          # serves data/db.json on http://localhost:3000
 ### Environment
 
 Only `VITE_`-prefixed variables reach the browser bundle, so nothing secret belongs in
-`.env`. See [`app/.env.example`](app/.env.example).
+`.env`. See [`app/.env.example`](app/.env.example). Vite does not load the
+`.env.example` file directly: copy it to `app/.env.local` before starting the dev server.
 
 - `VITE_API_URL` — base URL for every request the app makes.
 - `VITE_MODE` — `local` installs the fake backend (`src/mocks/fake-backend.ts`) as the
   axios adapter, so `/login`, `/users` and `/contact` are answered in the browser and
   everything else falls through to `VITE_API_URL`. `remote` talks to the real API only.
 
-Demo credentials in local mode: `test@gmail.com` / `test`.
+Local demo credentials (available only with `VITE_MODE=local`):
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Patient | `test@gmail.com` | `test` |
+| Patient | `joekaranja@gmail.com` | `joe123` |
+| Responder | `responder@gmail.com` | `responder123` |
+| Doctor | `doctor@gmail.com` | `doctor123` |
+| Staff | `staff@gmail.com` | `staff123` |
+| Admin | `admin@gmail.com` | `admin123` |
+
+These accounts and credentials are browser-side demo data, not real authentication.
+Frontend route guards only shape the demo experience; production authorization must be
+implemented and enforced by the Spring Boot backend. Staff, doctor, and admin workspaces
+are previews and do not display or control live hospital data.
 
 The `/signup` page validates the form but does not create an account. There is no
 registration service or registration endpoint in this project; do not treat a valid
@@ -86,9 +101,13 @@ app/src/
 `router/routes.ts` groups routes by who can reach them. `meta.requiresAuth` protects a
 route, while `meta.guestOnly` keeps signed-in users off the login and signup pages.
 
-| Public                                          | Guests only        | Needs a session                                        |
-| ----------------------------------------------- | ------------------ | ------------------------------------------------------ |
-| `/` `/about` `/faq` `/contact` `/posts` `/jobs` | `/login` `/signup` | `/home` `/api` `/posts/:id` `/jobs/:id` `/responder/*` |
+| Public                                          | Guests only        | Role-restricted workspaces                                |
+| ----------------------------------------------- | ------------------ | --------------------------------------------------------- |
+| `/` `/about` `/faq` `/contact` `/posts` `/jobs` | `/login` `/signup` | `/patient/*` `/responder/*` `/doctor/dashboard` `/staff/dashboard` `/admin/dashboard` |
+
+Patient, responder, doctor, staff, and admin workspaces require the matching demo
+role. The `/home`, `/api`, and detail routes require any valid demo session. These
+frontend checks are navigation controls only; they are not production security.
 
 The list pages are public while their detail pages are not - the "browse freely, sign in
 to go deeper" split. Opening a detail page signed out redirects to `/login?returnUrl=...`

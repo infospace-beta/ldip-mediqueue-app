@@ -1,10 +1,10 @@
 <template>
   <div
-    class="flex flex-col items-center justify-center gap-3 rounded-xl border border-red-200 bg-red-50 py-12 text-center dark:border-red-900/50 dark:bg-red-950/30"
+    class="flex flex-col items-center justify-center gap-3 rounded-xl border border-[var(--app-error)] bg-[var(--app-error-surface)] py-12 text-center"
     role="alert"
   >
-    <p class="font-medium text-red-700 dark:text-red-300">{{ title }}</p>
-    <p class="max-w-md text-sm text-red-700/80 dark:text-red-300/80">
+    <p class="font-medium text-[var(--app-error)]">{{ title }}</p>
+    <p class="max-w-md text-sm text-[var(--app-error)]">
       {{ message }}
     </p>
     <BaseButton v-if="onRetry" variant="ghost" size="sm" @click="onRetry">

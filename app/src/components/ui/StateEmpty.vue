@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 py-16 text-center dark:border-gray-700"
+    class="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--app-border)] py-16 text-center text-[var(--app-text-primary)]"
   >
     <p class="text-lg font-medium">{{ title }}</p>
     <p v-if="description" class="max-w-sm muted">{{ description }}</p>

@@ -1,0 +1,869 @@
+.admin-dashboard {
+  min-height: 100vh;
+  overflow-x: clip;
+  color: var(--app-text-primary);
+  background: var(--app-background);
+  font-family: var(--font-sans);
+}
+
+.admin-dashboard *,
+.admin-dashboard *::before,
+.admin-dashboard *::after {
+  box-sizing: border-box;
+}
+
+.admin-dashboard button {
+  font: inherit;
+}
+
+.admin-dashboard button:focus-visible {
+  outline: 3px solid var(--app-focus);
+  outline-offset: 2px;
+}
+
+.admin-skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 10px;
+  left: 10px;
+  padding: 9px 12px;
+  transform: translateY(-160%);
+  border-radius: 7px;
+  color: #fff;
+  background: var(--color-brand-900);
+}
+
+.admin-skip-link:focus {
+  transform: translateY(0);
+}
+
+.admin-sidebar {
+  position: fixed;
+  z-index: 50;
+  inset: 0 auto 0 0;
+  display: flex;
+  width: 270px;
+  flex-direction: column;
+  padding: 22px 15px 16px;
+  overflow-y: auto;
+  border-right: 1px solid var(--app-border);
+  color: #e6edf4;
+  background: var(--color-brand-900);
+}
+
+.admin-brand {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 11px;
+  margin: 0 6px 30px;
+}
+
+.admin-brand-mark {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  flex: none;
+  place-items: center;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--app-brand-solid);
+}
+
+.admin-brand-mark img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #fff;
+  object-fit: contain;
+}
+
+.admin-brand-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-brand-copy strong {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.admin-brand-copy small {
+  color: #c4d2dc;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.admin-nav-label,
+.admin-eyebrow {
+  display: block;
+  margin: 0;
+  color: var(--app-text-secondary);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-nav-label {
+  margin: 0 11px 9px;
+  color: #c4d2dc;
+}
+
+.admin-navigation {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-nav-link {
+  display: flex;
+  min-height: 43px;
+  align-items: center;
+  gap: 11px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #e6edf4;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 550;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.admin-nav-link:hover {
+  color: #fff;
+  background: rgb(255 255 255 / 10%);
+}
+
+.admin-nav-link-active {
+  border-color: rgb(255 255 255 / 12%);
+  color: #fff;
+  background: var(--app-brand-solid);
+  font-weight: 650;
+}
+
+.admin-connection-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: auto;
+  padding: 12px 10px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 8px;
+}
+
+.admin-connection-mark {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  margin-top: 3px;
+  border-radius: 50%;
+  background: var(--app-warning);
+}
+
+.admin-connection-note > span:last-child {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-connection-note strong {
+  color: #fff;
+  font-size: 11px;
+}
+
+.admin-connection-note small {
+  color: #c4d2dc;
+  font-size: 10px;
+}
+
+.admin-logout {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.admin-main {
+  min-height: 100vh;
+  margin-left: 270px;
+}
+
+.admin-topbar {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 28px;
+  border-bottom: 1px solid var(--app-border);
+  background: color-mix(in srgb, var(--app-surface) 94%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.admin-topbar-heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-topbar-heading .admin-eyebrow {
+  margin-bottom: 3px;
+  color: var(--app-brand-primary);
+  font-size: 9px;
+}
+
+.admin-topbar-heading h1 {
+  margin: 0;
+  color: var(--app-text-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.admin-topbar-actions,
+.admin-account {
+  display: flex;
+  align-items: center;
+}
+
+.admin-topbar-actions {
+  gap: 14px;
+}
+
+.admin-account {
+  min-width: 0;
+  gap: 9px;
+}
+
+.admin-account-mark {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--app-border);
+  border-radius: 50%;
+  color: var(--app-brand-primary);
+  background: color-mix(
+    in srgb,
+    var(--app-brand-primary) 13%,
+    var(--app-surface)
+  );
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-account > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.admin-account strong {
+  max-width: 180px;
+  overflow: hidden;
+  color: var(--app-text-primary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-account small {
+  color: var(--app-text-secondary);
+  font-size: 10px;
+}
+
+.admin-menu-button,
+.admin-scrim {
+  display: none;
+}
+
+.admin-content {
+  width: min(100%, 1500px);
+  margin: 0 auto;
+  padding: 24px 28px 20px;
+}
+
+.admin-integration-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 9px;
+  color: var(--app-text-secondary);
+  background: var(--app-surface);
+}
+
+.admin-banner-mark {
+  display: grid;
+  width: 19px;
+  height: 19px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--app-brand-solid);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-integration-banner p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.admin-integration-banner strong {
+  color: var(--app-text-primary);
+}
+
+.admin-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.admin-page-heading .admin-eyebrow,
+.admin-section-heading .admin-eyebrow {
+  margin-bottom: 6px;
+  color: var(--app-brand-primary);
+}
+
+.admin-page-heading h2 {
+  margin: 0;
+  color: var(--app-text-primary);
+  font-size: clamp(21px, 2.2vw, 27px);
+  font-weight: 720;
+  letter-spacing: -0.035em;
+}
+
+.admin-page-heading p {
+  max-width: 70ch;
+  margin: 7px 0 0;
+  color: var(--app-text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.admin-availability-badge,
+.admin-unavailable-badge {
+  display: inline-flex;
+  min-height: 29px;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0 10px;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  color: var(--app-text-secondary);
+  background: var(--app-surface);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.admin-section-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--app-brand-primary);
+  background: color-mix(
+    in srgb,
+    var(--app-brand-primary) 12%,
+    var(--app-surface)
+  );
+}
+
+.admin-overview-panel {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  background: var(--app-surface);
+  box-shadow: 0 2px 8px rgb(18 40 63 / 4%);
+}
+
+.admin-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 13px;
+}
+
+.admin-section-heading h2 {
+  margin: 0;
+  color: var(--app-text-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.admin-section-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 11px;
+}
+
+.admin-section-title .admin-eyebrow {
+  font-size: 9px;
+}
+
+.admin-overview-panel .flex.flex-col {
+  min-height: 160px;
+  padding: 24px;
+  color: var(--app-text-primary);
+  background: var(--app-background);
+}
+
+.admin-overview-panel .text-lg {
+  font-size: 14px;
+}
+
+.admin-overview-panel .muted {
+  color: var(--app-text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.admin-hospital-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.admin-hospital-panel {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  background: var(--app-surface);
+  box-shadow: 0 2px 8px rgb(18 40 63 / 4%);
+}
+
+.admin-hospital-panel .admin-section-heading {
+  margin-bottom: 15px;
+}
+
+.admin-hospital-panel .admin-section-heading h2 {
+  margin: 0;
+  color: var(--app-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.admin-hospital-search {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 13px;
+  padding: 0 11px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  color: var(--app-text-secondary);
+  background: var(--app-surface);
+}
+
+.admin-hospital-search:focus-within {
+  outline: 2px solid var(--app-focus);
+  outline-offset: 2px;
+}
+
+.admin-hospital-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: var(--app-text-primary);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+}
+
+.admin-hospital-search input:disabled {
+  cursor: not-allowed;
+}
+
+.admin-hospital-pending,
+.admin-hospital-feedback {
+  min-height: 122px;
+  padding: 18px;
+  border: 1px dashed var(--app-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: var(--app-brand-primary);
+  background: var(--app-background);
+}
+
+.admin-hospital-pending p,
+.admin-hospital-feedback {
+  margin: 0;
+  color: var(--app-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.admin-hospital-error {
+  padding: 15px;
+  border: 1px solid color-mix(in srgb, var(--app-error) 32%, var(--app-border));
+  border-radius: 8px;
+  color: var(--app-text-primary);
+  background: var(--app-error-surface);
+}
+
+.admin-hospital-error strong {
+  font-size: 13px;
+}
+
+.admin-hospital-error p {
+  margin: 6px 0 12px;
+  color: var(--app-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.admin-hospital-error button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--app-border);
+  border-radius: 7px;
+  color: var(--app-text-primary);
+  background: var(--app-surface);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.admin-hospital-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-hospital-list li {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+}
+
+.admin-hospital-list li > div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.admin-hospital-list strong {
+  overflow-wrap: anywhere;
+  color: var(--app-text-primary);
+  font-size: 12px;
+}
+
+.admin-hospital-list small {
+  color: var(--app-text-secondary);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.admin-hospital-status {
+  flex: none;
+  padding: 4px 8px;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  color: var(--app-text-secondary);
+  background: var(--app-surface-muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.admin-hospital-status.is-active {
+  border-color: color-mix(in srgb, var(--app-success) 30%, var(--app-border));
+  color: var(--app-success);
+  background: var(--app-success-surface);
+}
+
+.admin-hospital-form-intro,
+.admin-hospital-form-note {
+  margin: 0 0 14px;
+  color: var(--app-text-secondary);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.admin-hospital-form {
+  display: grid;
+  gap: 13px;
+}
+
+.admin-hospital-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.admin-hospital-field label,
+.admin-hospital-location legend {
+  color: var(--app-text-primary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.admin-hospital-field label span,
+.admin-hospital-location legend span {
+  color: var(--app-text-secondary);
+  font-weight: 450;
+}
+
+.admin-hospital-field label > span[aria-hidden="true"] {
+  color: var(--app-error);
+}
+
+.admin-hospital-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--app-border);
+  border-radius: 7px;
+  color: var(--app-text-primary);
+  background: var(--app-surface);
+  font: inherit;
+  font-size: 12px;
+}
+
+.admin-hospital-field input:focus-visible {
+  outline: 2px solid var(--app-focus);
+  outline-offset: 2px;
+}
+
+.admin-hospital-field input[aria-invalid="true"] {
+  border-color: var(--app-error);
+}
+
+.admin-hospital-field-error {
+  margin: 0;
+  color: var(--app-error);
+  font-size: 11px;
+}
+
+.admin-hospital-location {
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+}
+
+.admin-hospital-location legend {
+  padding: 0 5px;
+}
+
+.admin-hospital-location-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-hospital-registration-message {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--app-border);
+  border-radius: 7px;
+  color: var(--app-text-secondary);
+  background: var(--app-background);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.admin-hospital-submit {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--app-brand-solid);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-hospital-submit:hover:not(:disabled) {
+  background: var(--app-brand-hover);
+}
+
+.admin-hospital-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.admin-hospital-form-note {
+  margin: -5px 0 0;
+  font-size: 10px;
+}
+
+.admin-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 2px 4px;
+  color: var(--app-text-secondary);
+  font-size: 10px;
+}
+
+@media (max-width: 1100px) {
+  .admin-content {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .admin-topbar {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .admin-hospital-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .admin-sidebar {
+    z-index: 61;
+    width: min(290px, 86vw);
+    visibility: hidden;
+    transform: translateX(-105%);
+    transition: transform 180ms ease;
+  }
+
+  .admin-sidebar-open {
+    visibility: visible;
+    transform: translateX(0);
+  }
+
+  .admin-scrim {
+    position: fixed;
+    z-index: 60;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: rgb(8 22 34 / 48%);
+  }
+
+  .admin-main {
+    margin-left: 0;
+  }
+
+  .admin-menu-button {
+    display: inline-grid;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    place-items: center;
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    color: var(--app-text-primary);
+    background: var(--app-surface);
+    cursor: pointer;
+  }
+
+  .admin-menu-button span {
+    font-size: 20px;
+    line-height: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-topbar {
+    min-height: 66px;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+  }
+
+  .admin-topbar-heading .admin-eyebrow {
+    font-size: 8px;
+  }
+
+  .admin-topbar-heading h1 {
+    font-size: 14px;
+  }
+
+  .admin-topbar-actions {
+    gap: 6px;
+  }
+
+  .admin-account > span:last-child {
+    display: none;
+  }
+
+  .admin-content {
+    padding: 17px 12px 16px;
+  }
+
+  .admin-integration-banner {
+    margin-bottom: 15px;
+    padding: 11px;
+  }
+
+  .admin-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 11px;
+  }
+
+  .admin-overview-panel {
+    padding: 13px;
+  }
+
+  .admin-hospital-panel {
+    padding: 13px;
+  }
+
+  .admin-hospital-location-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-section-heading {
+    align-items: flex-start;
+  }
+
+  .admin-footer {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar,
+  .admin-nav-link {
+    transition: none;
+  }
+}

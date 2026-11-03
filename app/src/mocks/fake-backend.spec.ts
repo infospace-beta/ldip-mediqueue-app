@@ -17,8 +17,26 @@ describe("fake backend adapter", () => {
     expect(status).toBe(200);
     expect(data.token).toBeTruthy();
     expect(data.user.firstName).toBe("Test");
+    expect(data.user.role).toBe("patient");
     expect(data.user).not.toHaveProperty("password");
   });
+
+  it.each([
+    ["test@gmail.com", "test", "patient"],
+    ["joekaranja@gmail.com", "joe123", "patient"],
+    ["responder@gmail.com", "responder123", "responder"],
+    ["doctor@gmail.com", "doctor123", "doctor"],
+    ["staff@gmail.com", "staff123", "staff"],
+    ["admin@gmail.com", "admin123", "admin"],
+  ])(
+    "authenticates the local demo account for %s",
+    async (username, password, role) => {
+      const { data } = await api.post("/login", { username, password });
+
+      expect(data.user.role).toBe(role);
+      expect(data.user).not.toHaveProperty("password");
+    },
+  );
 
   it("rejects wrong credentials with a message", async () => {
     await expect(
@@ -42,7 +60,7 @@ describe("fake backend adapter", () => {
       headers: { Authorization: "Bearer fake-jwt-token" },
     });
 
-    expect(data).toHaveLength(2);
+    expect(data).toHaveLength(6);
     expect(data[0]).not.toHaveProperty("password");
   });
   it("accepts a valid contact message", async () => {

@@ -8,16 +8,20 @@
       @click.self="close()"
     >
       <div
-        class="w-full max-w-lg rounded-xl bg-white shadow-xl dark:bg-gray-900"
+        class="w-full max-w-lg rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text-primary)] shadow-xl"
       >
         <header
           v-if="title || $slots.header"
-          class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800"
+          class="flex items-center justify-between border-b border-[var(--app-border)] px-5 py-4"
         >
           <slot name="header">
             <h2 class="text-lg font-semibold">{{ title }}</h2>
           </slot>
-          <button aria-label="Close" class="px-2 text-xl" @click="close()">
+          <button
+            aria-label="Close"
+            class="rounded px-2 text-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]"
+            @click="close()"
+          >
             &times;
           </button>
         </header>
@@ -28,7 +32,7 @@
 
         <footer
           v-if="$slots.footer"
-          class="border-t border-gray-200 px-5 py-4 dark:border-gray-800"
+          class="border-t border-[var(--app-border)] px-5 py-4"
         >
           <slot name="footer" />
         </footer>

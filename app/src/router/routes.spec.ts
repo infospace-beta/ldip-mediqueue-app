@@ -8,6 +8,8 @@ import { ROUTE_NAMES } from "@/constants/routeNames";
  */
 const PUBLIC = [
   ROUTE_NAMES.landing,
+  ROUTE_NAMES.howItWorks,
+  ROUTE_NAMES.features,
   ROUTE_NAMES.about,
   ROUTE_NAMES.faq,
   ROUTE_NAMES.contact,
@@ -26,6 +28,13 @@ const GUARDED = [
 const byName = (name: string) => routes.find((route) => route.name === name);
 
 describe("route table", () => {
+  it.each([
+    [ROUTE_NAMES.howItWorks, "/how-it-works"],
+    [ROUTE_NAMES.features, "/features"],
+  ])("registers %s at %s", (name, path) => {
+    expect(byName(name)?.path).toBe(path);
+  });
+
   it.each(PUBLIC)("%s is reachable without a session", (name) => {
     const route = byName(name);
     expect(route, `route ${name} is missing`).toBeDefined();
@@ -52,6 +61,24 @@ describe("route table", () => {
     const responderRoute = routes.find((route) => route.path === "/responder");
 
     expect(responderRoute?.meta?.requiresAuth).toBe(true);
+    expect(responderRoute?.meta?.roles).toEqual(["responder"]);
+  });
+
+  it("restricts the patient portal and role previews to their matching roles", () => {
+    const patientRoute = routes.find((route) => route.path === "/patient");
+    const roleRoutes = [
+      ["/doctor/dashboard", "doctor"],
+      ["/staff/dashboard", "staff"],
+      ["/admin/dashboard", "admin"],
+    ] as const;
+
+    expect(patientRoute?.meta?.requiresAuth).toBe(true);
+    expect(patientRoute?.meta?.roles).toEqual(["patient"]);
+    roleRoutes.forEach(([path, role]) => {
+      const route = routes.find((entry) => entry.path === path);
+      expect(route?.meta?.requiresAuth).toBe(true);
+      expect(route?.meta?.roles).toEqual([role]);
+    });
   });
 
   it("lazy-loads every view so each page is its own chunk", () => {

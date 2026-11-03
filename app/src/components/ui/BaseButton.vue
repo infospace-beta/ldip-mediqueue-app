@@ -38,10 +38,10 @@ const props = withDefaults(
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-brand-600 text-white hover:bg-brand-700 shadow-sm",
   secondary:
-    "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700",
+    "border border-[var(--app-border)] bg-[var(--app-surface-muted)] text-[var(--app-text-primary)] hover:bg-[var(--app-hover-surface)]",
   danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
   ghost:
-    "border border-gray-300 bg-transparent text-gray-800 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800",
+    "border border-[var(--app-border)] bg-transparent text-[var(--app-text-primary)] hover:bg-[var(--app-hover-surface)]",
 };
 
 const SIZES: Record<ButtonSize, string> = {
@@ -51,7 +51,7 @@ const SIZES: Record<ButtonSize, string> = {
 };
 
 const classes = computed(() => [
-  "inline-flex items-center justify-center rounded-lg font-semibold transition-colors",
+  "inline-flex items-center justify-center rounded-lg font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]",
   "disabled:cursor-not-allowed disabled:opacity-50",
   VARIANTS[props.variant],
   SIZES[props.size],

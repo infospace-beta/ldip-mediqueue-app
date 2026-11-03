@@ -3,16 +3,18 @@
     :is="to ? RouterLink : 'div'"
     :to="to"
     :class="[
-      'block rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900',
+      'block rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text-primary)] shadow-sm',
       to ? 'transition hover:border-brand-500 hover:shadow-md' : '',
     ]"
   >
     <header
       v-if="title || $slots.header"
-      class="border-b border-gray-200 px-5 py-4 dark:border-gray-800"
+      class="border-b border-[var(--app-border)] px-5 py-4"
     >
       <slot name="header">
-        <h2 class="font-semibold">{{ title }}</h2>
+        <h2 class="font-semibold text-[var(--app-text-primary)]">
+          {{ title }}
+        </h2>
       </slot>
     </header>
 
@@ -22,7 +24,7 @@
 
     <footer
       v-if="$slots.footer"
-      class="border-t border-gray-200 px-5 py-4 dark:border-gray-800"
+      class="border-t border-[var(--app-border)] px-5 py-4"
     >
       <slot name="footer" />
     </footer>

@@ -11,6 +11,7 @@ const user: User = {
   username: "test@gmail.com",
   firstName: "Test",
   lastName: "User",
+  role: "patient",
 };
 
 const createTestRouter = () =>
@@ -22,6 +23,27 @@ const createTestRouter = () =>
       { path: "/home", name: "home", component: { template: "<div />" } },
       {
         path: "/patient/dashboard",
+        name: "patient-dashboard",
+        component: { template: "<div />" },
+      },
+      {
+        path: "/responder/dashboard",
+        name: "responder-dashboard",
+        component: { template: "<div />" },
+      },
+      {
+        path: "/doctor/dashboard",
+        name: "doctor-dashboard",
+        component: { template: "<div />" },
+      },
+      {
+        path: "/staff/dashboard",
+        name: "staff-dashboard",
+        component: { template: "<div />" },
+      },
+      {
+        path: "/admin/dashboard",
+        name: "admin-dashboard",
         component: { template: "<div />" },
       },
     ],
@@ -98,5 +120,26 @@ describe("LoginForm", () => {
     expect(wrapper.get('[role="alert"]').text()).toBe(
       "Username or password is incorrect",
     );
+  });
+
+  it("uses the signed-in role dashboard for an unsafe returnUrl", async () => {
+    setActivePinia(createPinia());
+    vi.spyOn(authService, "login").mockResolvedValue({
+      data: {
+        user: { ...user, role: "responder" },
+        token: "demo-token",
+      },
+    } as Awaited<ReturnType<typeof authService.login>>);
+
+    const router = createTestRouter();
+    await router.push("/login?returnUrl=https%3A%2F%2Fexample.com%2Fadmin");
+    const wrapper = mount(LoginForm, { global: { plugins: [router] } });
+
+    await wrapper.get("#login-email").setValue("responder@example.com");
+    await wrapper.get("#login-password").setValue("responder123");
+    await wrapper.get("form").trigger("submit");
+    await flushPromises();
+
+    expect(router.currentRoute.value.path).toBe("/responder/dashboard");
   });
 });

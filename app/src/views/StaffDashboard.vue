@@ -1,159 +1,111 @@
 <script setup lang="ts">
-import { ref, type Component } from 'vue'
+import { computed, onMounted, ref } from "vue";
+import { Activity, Menu, X } from "@lucide/vue";
+import ThemeSwitcher from "@/components/common/ThemeSwitcher.vue";
+import StaffSidebar from "@/components/Staff/StaffSidebar.vue";
 import {
-  Activity,
-  Building2,
-  CalendarDays,
-  Clock3,
-  LayoutDashboard,
-  Menu,
-  ShieldAlert,
-  UsersRound,
-  X,
-} from '@lucide/vue'
-import '../assets/staff.css'
+  staffNavigation,
+  type StaffSectionId,
+} from "@/components/Staff/staffNavigation";
+import { useMobileNavigation } from "@/composables/useMobileNavigation";
+import { useAuthStore } from "@/stores/auth.store";
+import { useHospitalWorkspaceStore } from "@/stores/hospitalWorkspace.store";
+import "../assets/staff.css";
 
-interface StaffSection {
-  id: string
-  label: string
-  title: string
-  description: string
-  icon: Component
+const auth = useAuthStore();
+const hospitalWorkspace = useHospitalWorkspaceStore();
+const activeSectionId = ref<StaffSectionId>("operations");
+const activeSection = computed(() =>
+  staffNavigation.find((section) => section.id === activeSectionId.value),
+);
+const {
+  isMobile: mobileViewport,
+  isOpen: mobileNavigationOpen,
+  root: mobileNavigationRoot,
+  toggle: toggleMobileNavigation,
+  close: closeMobileNavigation,
+} = useMobileNavigation({
+  breakpoint: 760,
+  trigger: ".staff-menu-button",
+  firstNavigationItem: ".staff-navigation .staff-nav-link",
+});
+
+onMounted(() => {
+  if (auth.user?.role === "staff") {
+    void hospitalWorkspace.loadAssignments(auth.user.id);
+  }
+});
+
+function setNavigationRoot(element: unknown) {
+  mobileNavigationRoot.value = element instanceof HTMLElement ? element : null;
 }
 
-const navigation: StaffSection[] = [
-  {
-    id: 'operations',
-    label: 'Operations overview',
-    title: 'Hospital operations',
-    description:
-      'Operational summaries will be available when an authorized hospital service is connected.',
-    icon: Activity,
-  },
-  {
-    id: 'queue',
-    label: 'Queue monitoring',
-    title: 'Queue monitoring',
-    description:
-      'Queue records and status are unavailable. No live queue activity is shown in this preview.',
-    icon: Clock3,
-  },
-  {
-    id: 'patient-flow',
-    label: 'Appointments & patient flow',
-    title: 'Appointments and patient flow',
-    description:
-      'Appointment schedules and patient-flow information are unavailable until a verified service is connected.',
-    icon: CalendarDays,
-  },
-  {
-    id: 'departments',
-    label: 'Staff & departments',
-    title: 'Staff and departments',
-    description:
-      'Staff rosters and department information are unavailable. No membership or staffing details are assumed.',
-    icon: UsersRound,
-  },
-  {
-    id: 'emergency',
-    label: 'Emergency activity',
-    title: 'Emergency activity',
-    description:
-      'Emergency activity is unavailable. This dashboard does not receive or dispatch emergency requests.',
-    icon: ShieldAlert,
-  },
-]
-
-const mobileNavigationOpen = ref(false)
-const activeSectionId = ref('operations')
-
-function closeMobileNavigation() {
-  mobileNavigationOpen.value = false
+function navigateTo(section: StaffSectionId) {
+  activeSectionId.value = section;
+  void closeMobileNavigation();
 }
 </script>
 
 <template>
-  <div class="staff-dashboard">
-    <button
-      v-if="mobileNavigationOpen"
-      class="staff-scrim"
-      type="button"
-      aria-label="Close staff navigation"
-      @click="closeMobileNavigation"
-    />
-
-    <aside
-      class="staff-sidebar"
-      :class="{ 'staff-sidebar-open': mobileNavigationOpen }"
-      aria-label="Hospital staff navigation"
+  <div :ref="setNavigationRoot" class="staff-dashboard">
+    <a class="staff-skip-link" href="#staff-main-content"
+      >Skip to main content</a
     >
-      <a class="staff-brand" href="#operations" @click="closeMobileNavigation">
-        <span class="staff-brand-mark" aria-hidden="true"><Building2 :size="21" /></span>
-        <span class="staff-brand-copy">
-          <strong>MediQueue</strong>
-          <small>HOSPITAL OPERATIONS</small>
-        </span>
-      </a>
-
-      <p class="staff-nav-heading">WORKSPACE</p>
-      <nav id="staff-navigation" class="staff-navigation" aria-label="Staff workspace">
-        <a
-          v-for="(section, index) in navigation"
-          :key="section.id"
-          class="staff-nav-link"
-          :class="{ 'staff-nav-link-active': activeSectionId === section.id }"
-          :aria-current="activeSectionId === section.id ? 'location' : undefined"
-          :href="`#${section.id}`"
-          @click="activeSectionId = section.id; closeMobileNavigation()"
-        >
-          <component :is="index === 0 ? LayoutDashboard : section.icon" :size="18" aria-hidden="true" />
-          <span>{{ section.label }}</span>
-        </a>
-      </nav>
-
-      <div class="staff-sidebar-note" role="status">
-        <span class="staff-connection-mark" aria-hidden="true"></span>
-        <span>
-          <strong>Data connection</strong>
-          <small>Not configured</small>
-        </span>
-      </div>
-    </aside>
+    <StaffSidebar
+      :active-section="activeSectionId"
+      :mobile-open="mobileNavigationOpen"
+      :mobile-viewport="mobileViewport"
+      :navigation="staffNavigation"
+      @navigate="navigateTo"
+      @close="closeMobileNavigation"
+    />
 
     <div class="staff-main">
       <header class="staff-topbar">
         <div class="staff-topbar-heading">
           <span class="staff-eyebrow">MEDIQUEUE / STAFF</span>
-          <h1>Hospital operations</h1>
+          <h1>{{ activeSection?.title ?? "Hospital operations" }}</h1>
         </div>
-        <button
-          class="staff-menu-button"
-          type="button"
-          :aria-expanded="mobileNavigationOpen"
-          aria-controls="staff-navigation"
-          :aria-label="mobileNavigationOpen ? 'Close navigation' : 'Open navigation'"
-          @click="mobileNavigationOpen = !mobileNavigationOpen"
-        >
-          <X v-if="mobileNavigationOpen" :size="20" aria-hidden="true" />
-          <Menu v-else :size="20" aria-hidden="true" />
-        </button>
+        <div class="staff-topbar-actions">
+          <ThemeSwitcher />
+          <button
+            class="staff-menu-button"
+            type="button"
+            :aria-expanded="mobileNavigationOpen"
+            aria-controls="staff-navigation"
+            :aria-label="
+              mobileNavigationOpen ? 'Close navigation' : 'Open navigation'
+            "
+            @click="toggleMobileNavigation"
+          >
+            <X v-if="mobileNavigationOpen" :size="20" aria-hidden="true" />
+            <Menu v-else :size="20" aria-hidden="true" />
+          </button>
+        </div>
       </header>
 
-      <main class="staff-content">
+      <main id="staff-main-content" class="staff-content">
         <section class="staff-intro" aria-labelledby="staff-page-title">
           <div>
             <span class="staff-eyebrow">STAFF WORKSPACE</span>
             <h2 id="staff-page-title">Hospital operations overview</h2>
             <p>
-              A workspace for queue, patient-flow, department, and emergency
-              information.
+              Organize patient-flow and hospital service workflows here.
+              Assigned hospital information appears only when a verified service
+              provides it.
             </p>
           </div>
           <span class="staff-preview-badge">Preview · No live data</span>
         </section>
 
-        <section class="staff-connection-alert" role="status" aria-live="polite">
-          <span class="staff-alert-icon" aria-hidden="true"><Activity :size="19" /></span>
+        <section
+          class="staff-connection-alert"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="staff-alert-icon" aria-hidden="true"
+            ><Activity :size="19"
+          /></span>
           <div>
             <strong>Hospital services are not connected</strong>
             <p>
@@ -163,7 +115,11 @@ function closeMobileNavigation() {
           </div>
         </section>
 
-        <section id="operations" class="staff-section staff-overview-section" aria-labelledby="operations-title">
+        <section
+          id="operations"
+          class="staff-section staff-overview-section"
+          aria-labelledby="operations-title"
+        >
           <div class="staff-section-heading">
             <div>
               <span class="staff-eyebrow">OVERVIEW</span>
@@ -172,21 +128,24 @@ function closeMobileNavigation() {
             <span class="staff-unavailable-label">Unavailable</span>
           </div>
           <p class="staff-section-description">
-            Hospital-wide operational summaries will appear here when a
-            verified data service is available.
+            Hospital-wide operational summaries will appear here when a verified
+            data service is available.
           </p>
           <div class="staff-overview-placeholder" role="status">
             <Activity :size="20" aria-hidden="true" />
             <span>
               <strong>No operational data available</strong>
-              <small>This is an unavailable state, not a report of zero activity.</small>
+              <small
+                >This is an unavailable state, not a report of zero
+                activity.</small
+              >
             </span>
           </div>
         </section>
 
         <div class="staff-section-grid">
           <section
-            v-for="section in navigation.slice(1)"
+            v-for="section in staffNavigation.slice(1)"
             :id="section.id"
             :key="section.id"
             class="staff-section staff-detail-section"

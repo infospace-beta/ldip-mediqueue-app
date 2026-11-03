@@ -1,4 +1,4 @@
-import axios, {
+ import axios, {
   type AxiosAdapter,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
@@ -27,6 +27,7 @@ const users: MockUser[] = [
     password: "test",
     firstName: "Test",
     lastName: "User",
+    role: "patient",
   },
   {
     id: 2,
@@ -34,6 +35,39 @@ const users: MockUser[] = [
     password: "joe123",
     firstName: "Joe",
     lastName: "Karanja",
+    role: "patient",
+  },
+  {
+    id: 3,
+    username: "responder@gmail.com",
+    password: "responder123",
+    firstName: "Riley",
+    lastName: "Responder",
+    role: "responder",
+  },
+  {
+    id: 4,
+    username: "doctor@gmail.com",
+    password: "doctor123",
+    firstName: "Dana",
+    lastName: "Doctor",
+    role: "doctor",
+  },
+  {
+    id: 5,
+    username: "staff@gmail.com",
+    password: "staff123",
+    firstName: "Sam",
+    lastName: "Staff",
+    role: "staff",
+  },
+  {
+    id: 6,
+    username: "admin@gmail.com",
+    password: "admin123",
+    firstName: "Alex",
+    lastName: "Admin",
+    role: "admin",
   },
 ];
 

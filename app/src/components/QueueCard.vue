@@ -8,11 +8,13 @@ import ConfirmationModal from './ConfirmationModal.vue'
 
 const router = useRouter()
 const confirmOpen = ref(false)
+const clearedNotice = ref(false)
 const queueProgress = computed(() => `${queue.progress}%`)
 function leaveQueue() {
   queue.active = false
   queue.status = 'Left queue'
   confirmOpen.value = false
+  clearedNotice.value = true
 }
 </script>
 
@@ -22,6 +24,7 @@ function leaveQueue() {
       <div><span class="eyebrow">QUEUE STATUS</span><h2>Current queue</h2></div>
       <StatusBadge v-if="queue.active" :status="queue.status" />
     </div>
+    <p v-if="clearedNotice" class="form-message service-notice" role="status">The queue details were cleared from this browser session. No hospital was notified.</p>
     <template v-if="queue.active">
       <div class="queue-hospital-row">
         <span class="hospital-emblem"><Plus :size="22" :stroke-width="3" /></span>
@@ -45,12 +48,12 @@ function leaveQueue() {
       <span class="empty-queue-icon"><Clock3 :size="23" /></span>
       <div class="empty-queue-copy">
         <strong>No active queue</strong>
-        <p>Join a queue to prepare a request. Queue number and wait details will appear when a hospital service is connected.</p>
+        <p>Prepare visit details for a queue request. A connected hospital service is required to submit it or reserve a place.</p>
       </div>
       <div class="empty-queue-actions">
-        <button class="button button-primary" type="button" @click="router.push('/patient/join-queue')">Join a queue <ArrowRight :size="16" /></button>
+        <button class="button button-primary" type="button" @click="router.push('/patient/join-queue')">Prepare a queue request <ArrowRight :size="16" aria-hidden="true" /></button>
       </div>
     </div>
-    <ConfirmationModal :open="confirmOpen" title="Leave this queue?" message="Your place in line will be released. You'll need to join again if you still need care." confirm-label="Leave queue" destructive @confirm="leaveQueue" @cancel="confirmOpen = false" />
+    <ConfirmationModal :open="confirmOpen" title="Clear this queue request?" message="This clears the queue details stored in this browser session. It will not contact a hospital or change a real queue." confirm-label="Clear request" cancel-label="Keep request" destructive @confirm="leaveQueue" @cancel="confirmOpen = false" />
   </section>
 </template>

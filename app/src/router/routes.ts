@@ -12,6 +12,18 @@ export const routes: RouteRecordRaw[] = [
   },
 
   {
+    path: "/how-it-works",
+    name: ROUTE_NAMES.howItWorks,
+    component: () => import("@/views/HowItWorksView.vue"),
+  },
+
+  {
+    path: "/features",
+    name: ROUTE_NAMES.features,
+    component: () => import("@/views/FeaturesView.vue"),
+  },
+
+  {
     path: "/about",
     name: ROUTE_NAMES.about,
     component: () => import("@/views/AboutView.vue"),
@@ -121,6 +133,8 @@ export const routes: RouteRecordRaw[] = [
     component: () => import("@/components/PatientLayout.vue"),
     meta: {
       layout: "blank",
+      requiresAuth: true,
+      roles: ["patient"],
     },
     children: [
       {
@@ -130,6 +144,7 @@ export const routes: RouteRecordRaw[] = [
 
       {
         path: "dashboard",
+        name: ROUTE_NAMES.patientDashboard,
         component: () => import("@/views/DashboardPage.vue"),
         meta: {
           title: "Dashboard",
@@ -148,7 +163,7 @@ export const routes: RouteRecordRaw[] = [
         path: "join-queue",
         component: () => import("@/views/JoinQueuePage.vue"),
         meta: {
-          title: "Join Queue",
+          title: "Prepare queue request",
         },
       },
 
@@ -213,6 +228,7 @@ export const routes: RouteRecordRaw[] = [
     meta: {
       layout: "blank",
       requiresAuth: true,
+      roles: ["responder"],
     },
     children: [
       {
@@ -222,6 +238,7 @@ export const routes: RouteRecordRaw[] = [
 
       {
         path: "dashboard",
+        name: ROUTE_NAMES.responderDashboard,
         component: () => import("@/views/ResponderSection.vue"),
         meta: {
           title: "Responder Dashboard",
@@ -292,6 +309,41 @@ export const routes: RouteRecordRaw[] = [
         },
       },
     ],
+  },
+
+  {
+    path: "/doctor/dashboard",
+    name: ROUTE_NAMES.doctorDashboard,
+    component: () => import("@/views/DoctorDashboard.vue"),
+    meta: {
+      layout: "blank",
+      requiresAuth: true,
+      roles: ["doctor"],
+      title: "Doctor workspace preview",
+    },
+  },
+
+  {
+    path: "/staff/dashboard",
+    name: ROUTE_NAMES.staffDashboard,
+    component: () => import("@/views/StaffDashboard.vue"),
+    meta: {
+      layout: "blank",
+      requiresAuth: true,
+      roles: ["staff"],
+    },
+  },
+
+  {
+    path: "/admin/dashboard",
+    name: ROUTE_NAMES.adminDashboard,
+    component: () => import("@/views/AdminDashboard.vue"),
+    meta: {
+      layout: "blank",
+      requiresAuth: true,
+      roles: ["admin"],
+      title: "Admin Dashboard",
+    },
   },
 
   // =====================================================

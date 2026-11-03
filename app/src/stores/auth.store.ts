@@ -2,9 +2,12 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import { authService, type LoginCredentials } from "@/services/auth.service";
+import { useHospitalWorkspaceStore } from "@/stores/hospitalWorkspace.store";
+import { resetPatientSession } from "@/data/patient";
+import { resetResponderSession } from "@/components/Responder/data.js";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { apiMessage } from "@/utils/errors";
-import type { User } from "@/types/models";
+import { isUserRole, type User } from "@/types/models";
 
 export const useAuthStore = defineStore("auth", () => {
   /**STATE
@@ -23,7 +26,9 @@ export const useAuthStore = defineStore("auth", () => {
   const error = ref<string | null>(null);
 
   /**GETTERS */
-  const isLoggedIn = computed(() => user.value !== null);
+  const isLoggedIn = computed(
+    () => user.value !== null && isUserRole(user.value.role),
+  );
 
   /**ACTIONS */
   /**Authenticate and persist the session. Returns true on success. */
@@ -32,6 +37,12 @@ export const useAuthStore = defineStore("auth", () => {
     error.value = null;
     try {
       const { data } = await authService.login(credentials);
+      if (!data.user || !isUserRole(data.user.role)) {
+        user.value = null;
+        token.value = null;
+        error.value = "This account has an unsupported role.";
+        return false;
+      }
       user.value = data.user ?? null;
       token.value = data.token ?? null;
       return true;
@@ -48,6 +59,9 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
     token.value = null;
     error.value = null;
+    useHospitalWorkspaceStore().clearWorkspace();
+    resetPatientSession();
+    resetResponderSession();
   }
 
   return {

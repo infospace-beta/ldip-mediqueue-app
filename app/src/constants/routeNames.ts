@@ -5,6 +5,8 @@
 export const ROUTE_NAMES = {
   /**Public */
   landing: "landing",
+  howItWorks: "how-it-works",
+  features: "features",
   about: "about",
   contact: "contact",
   faq: "faq",
@@ -21,6 +23,19 @@ export const ROUTE_NAMES = {
   apiTest: "api-test",
   postDetails: "post-details",
   jobDetails: "job-details",
+  patientDashboard: "patient-dashboard",
+  responderDashboard: "responder-dashboard",
+  doctorDashboard: "doctor-dashboard",
+  staffDashboard: "staff-dashboard",
+  adminDashboard: "admin-dashboard",
 } as const;
 
 export type RouteName = (typeof ROUTE_NAMES)[keyof typeof ROUTE_NAMES];
+
+export const ROLE_DASHBOARD_NAMES = {
+  patient: ROUTE_NAMES.patientDashboard,
+  responder: ROUTE_NAMES.responderDashboard,
+  doctor: ROUTE_NAMES.doctorDashboard,
+  staff: ROUTE_NAMES.staffDashboard,
+  admin: ROUTE_NAMES.adminDashboard,
+} as const;

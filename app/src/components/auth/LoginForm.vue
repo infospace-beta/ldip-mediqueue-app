@@ -2,10 +2,10 @@
   <BaseCard class="auth-form-card w-full">
     <template #header>
       <div class="space-y-1">
-        <p class="auth-eyebrow">Patient access</p>
+        <p class="auth-eyebrow">MediQueue access</p>
         <h1 class="auth-heading">Welcome back</h1>
         <p class="auth-supporting">
-          Sign in to check the queue and appointment information for your care.
+          Sign in to open the workspace assigned to your demo role.
         </p>
       </div>
     </template>
@@ -58,9 +58,8 @@
 
     <template #footer>
       <p class="auth-note">
-        Local demo credentials (with <code>VITE_MODE=local</code>):
-        <code class="font-medium text-slate-800">test@gmail.com</code> /
-        <code class="font-medium text-slate-800">test</code>
+        Local demo accounts (with <code>VITE_MODE=local</code>) are documented
+        in the project README.
       </p>
     </template>
   </BaseCard>
@@ -75,7 +74,8 @@ import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { useAuthStore } from "@/stores";
-import { ROUTE_NAMES } from "@/constants/routeNames";
+import { ROLE_DASHBOARD_NAMES, ROUTE_NAMES } from "@/constants/routeNames";
+import { isUserRole } from "@/types/models";
 
 const route = useRoute();
 const router = useRouter();
@@ -108,8 +108,21 @@ const onSubmit = async () => {
   const loggedIn = await auth.login(formData);
   if (!loggedIn) return;
 
-  const target = route.query.returnUrl || auth.returnUrl;
+  const requestedTarget = route.query.returnUrl ?? auth.returnUrl;
+  const target =
+    typeof requestedTarget === "string" &&
+    requestedTarget.startsWith("/") &&
+    !requestedTarget.startsWith("//") &&
+    !requestedTarget.includes("\\") &&
+    !/[\u0000-\u001f]/.test(requestedTarget)
+      ? requestedTarget
+      : null;
   auth.returnUrl = null;
-  router.push(target ? String(target) : { name: ROUTE_NAMES.home });
+  const role = auth.user?.role;
+  router.push(
+    target || !isUserRole(role)
+      ? (target ?? { name: ROLE_DASHBOARD_NAMES.patient })
+      : { name: ROLE_DASHBOARD_NAMES[role] },
+  );
 };
 </script>

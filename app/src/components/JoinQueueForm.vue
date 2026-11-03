@@ -1,70 +1,199 @@
 ﻿<script setup>
-import { computed, ref } from 'vue'
-import { ArrowRight, Check, ChevronDown, Clock3, MapPin, Search, ShieldPlus } from '@lucide/vue'
-import LoadingSpinner from './LoadingSpinner.vue'
+import { computed, ref } from "vue";
+import {
+  ArrowRight,
+  Check,
+  ChevronDown,
+  Clock3,
+  MapPin,
+  Search,
+  ShieldPlus,
+} from "@lucide/vue";
 
-const hospital = ref('')
-const department = ref('')
-const service = ref('')
-const visitType = ref('')
-const queueType = ref('Normal')
-const loading = ref(false)
-const submitted = ref(false)
-const formError = ref('')
+const hospital = ref("");
+const department = ref("");
+const service = ref("");
+const visitType = ref("");
+const queueType = ref("Normal");
+const submitted = ref(false);
+const formError = ref("");
 const services = computed(() => {
-  if (!department.value) return []
-  return department.value === 'Emergency' ? ['Emergency assessment', 'Urgent care'] : ['Consultation', 'Follow-up', 'Screening']
-})
+  if (!department.value) return [];
+  return department.value === "Emergency"
+    ? ["Emergency assessment", "Urgent care"]
+    : ["Consultation", "Follow-up", "Screening"];
+});
 
 function submitQueue() {
-  if (!hospital.value.trim() || !department.value || !service.value || !visitType.value) {
-    formError.value = 'Enter a hospital and select a department, service, and visit type.'
-    return
+  if (
+    !hospital.value.trim() ||
+    !department.value ||
+    !service.value ||
+    !visitType.value
+  ) {
+    formError.value =
+      "Enter a hospital and select a department, service, and visit type.";
+    return;
   }
 
-  formError.value = ''
-  loading.value = true
-  window.setTimeout(() => {
-    loading.value = false
-    submitted.value = true
-  }, 450)
+  formError.value = "";
+  submitted.value = true;
 }
 </script>
 
 <template>
   <div class="join-layout">
     <section class="panel join-form-panel">
-      <div class="panel-header"><div><span class="eyebrow">START YOUR VISIT</span><h2>Join a hospital queue</h2><p class="panel-subtitle">Choose your visit details. Live hospital availability will load when connected.</p></div><span class="step-count">01 <span>/ 01</span></span></div>
-      <form class="join-form" @submit.prevent="submitQueue">
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">PREPARE REQUEST</span>
+          <h2>Queue request details</h2>
+          <p class="panel-subtitle">
+            Check the visit details locally. This form cannot submit a request
+            or reserve a place in line.
+          </p>
+        </div>
+        <span class="step-count">01 <span>/ 01</span></span>
+      </div>
+      <form
+        class="join-form"
+        @submit.prevent="submitQueue"
+        @input="submitted = false"
+        @change="submitted = false"
+      >
+        <p class="form-helper">
+          Department, service, and visit-type choices are examples for this
+          prototype. They do not describe a connected hospital catalogue.
+        </p>
         <div class="field-group">
           <label class="field-label" for="hospital-search">Hospital</label>
-          <div class="hospital-search-wrap"><Search :size="18" aria-hidden="true" /><input id="hospital-search" v-model="hospital" placeholder="Enter hospital name" autocomplete="off" aria-describedby="hospital-help" /><MapPin :size="17" class="search-locate" aria-hidden="true" /></div>
-          <p id="hospital-help" class="form-helper">No hospital directory is connected. Enter a name to prepare a prototype request.</p>
+          <div class="hospital-search-wrap">
+            <Search :size="18" aria-hidden="true" /><input
+              id="hospital-search"
+              v-model="hospital"
+              placeholder="Enter hospital name"
+              autocomplete="off"
+              aria-describedby="hospital-help"
+            /><MapPin :size="17" class="search-locate" aria-hidden="true" />
+          </div>
+          <p id="hospital-help" class="form-helper">
+            No hospital directory is connected. Enter a name to prepare a
+            prototype request.
+          </p>
         </div>
         <div class="field-grid">
-          <label><span class="field-label">Department</span><span class="select-wrap"><select v-model="department" @change="service = ''"><option value="">Select department</option><option>Emergency</option><option>General practice</option><option>Cardiology</option><option>Pediatrics</option><option>Women's health</option></select><ChevronDown :size="16" /></span></label>
-          <label><span class="field-label">Service</span><span class="select-wrap"><select v-model="service" :disabled="!department"><option value="">Select service</option><option v-for="option in services" :key="option" :value="option">{{ option }}</option></select><ChevronDown :size="16" /></span></label>
-          <label><span class="field-label">Visit type</span><span class="select-wrap"><select v-model="visitType"><option value="">Select visit type</option><option>Walk-in</option><option>Follow-up</option><option>Referral</option></select><ChevronDown :size="16" /></span></label>
+          <label
+            ><span class="field-label">Department</span
+            ><span class="select-wrap"
+              ><select v-model="department" @change="service = ''">
+                <option value="">Select department</option>
+                <option>Emergency</option>
+                <option>General practice</option>
+                <option>Cardiology</option>
+                <option>Pediatrics</option>
+                <option>Women's health</option></select
+              ><ChevronDown :size="16" /></span
+          ></label>
+          <label
+            ><span class="field-label">Service</span
+            ><span class="select-wrap"
+              ><select v-model="service" :disabled="!department">
+                <option value="">Select service</option>
+                <option
+                  v-for="option in services"
+                  :key="option"
+                  :value="option"
+                >
+                  {{ option }}
+                </option></select
+              ><ChevronDown :size="16" /></span
+          ></label>
+          <label
+            ><span class="field-label">Visit type</span
+            ><span class="select-wrap"
+              ><select v-model="visitType">
+                <option value="">Select visit type</option>
+                <option>Walk-in</option>
+                <option>Follow-up</option>
+                <option>Referral</option></select
+              ><ChevronDown :size="16" /></span
+          ></label>
         </div>
-        <fieldset class="urgency-field"><legend class="field-label">Queue type</legend><div class="urgency-options"><button type="button" class="urgency-option" :class="{ selected: queueType === 'Normal' }" :aria-pressed="queueType === 'Normal'" @click="queueType = 'Normal'"><span class="urgency-symbol"><Check :size="15" /></span><span><strong>Normal</strong><small>Standard queue</small></span></button><button type="button" class="urgency-option urgency-emergency" :class="{ selected: queueType === 'Emergency' }" :aria-pressed="queueType === 'Emergency'" @click="queueType = 'Emergency'"><span class="urgency-symbol"><ShieldPlus :size="15" /></span><span><strong>Emergency</strong><small>Urgent attention</small></span></button></div></fieldset>
-        <p v-if="formError" class="form-message form-error" role="alert">{{ formError }}</p>
-        <output v-if="submitted" class="form-message form-success">Request prepared. Queue details will appear after connecting to the hospital service.</output>
-        <button class="button button-primary button-join" type="submit" :disabled="loading"><LoadingSpinner v-if="loading" /><span v-else>Join Queue</span><ArrowRight v-if="!loading" class="button-arrow" :size="18" aria-hidden="true" /></button>
-        <p class="form-note"><ShieldPlus :size="17" aria-hidden="true" /> <span>If this is a life-threatening emergency, contact local emergency services. Selecting an emergency queue here does not contact emergency services.</span></p>
+        <fieldset class="urgency-field">
+          <legend class="field-label">Queue type</legend>
+          <div class="urgency-options">
+            <button
+              type="button"
+              class="urgency-option"
+              :class="{ selected: queueType === 'Normal' }"
+              :aria-pressed="queueType === 'Normal'"
+              @click="queueType = 'Normal'"
+            >
+              <span class="urgency-symbol"><Check :size="15" /></span
+              ><span
+                ><strong>Normal</strong><small>Standard queue</small></span
+              ></button
+            ><button
+              type="button"
+              class="urgency-option urgency-emergency"
+              :class="{ selected: queueType === 'Emergency' }"
+              :aria-pressed="queueType === 'Emergency'"
+              @click="queueType = 'Emergency'"
+            >
+              <span class="urgency-symbol"><ShieldPlus :size="15" /></span
+              ><span
+                ><strong>Emergency</strong><small>Urgent attention</small></span
+              >
+            </button>
+          </div>
+        </fieldset>
+        <p v-if="formError" class="form-message form-error" role="alert">
+          {{ formError }}
+        </p>
+        <output
+          v-if="submitted"
+          class="form-message service-notice"
+          role="status"
+          >Details checked in this browser session only. No queue request was
+          sent or saved, and no place in line was reserved.</output
+        >
+        <button class="button button-primary button-join" type="submit">
+          <span>Check details</span
+          ><ArrowRight class="button-arrow" :size="18" aria-hidden="true" />
+        </button>
+        <p class="form-note">
+          <ShieldPlus :size="17" aria-hidden="true" />
+          <span
+            >If this is a life-threatening emergency, contact local emergency
+            services. Selecting an emergency queue here does not contact
+            emergency services.</span
+          >
+        </p>
       </form>
     </section>
     <aside class="join-side-column">
       <section class="panel care-info-panel">
-        <span class="care-info-icon"><Clock3 :size="20" aria-hidden="true" /></span>
+        <span class="care-info-icon"
+          ><Clock3 :size="20" aria-hidden="true"
+        /></span>
         <span class="eyebrow">QUEUE OVERVIEW</span>
         <h3>Queue details</h3>
-        <p>Queue number and wait information will appear here when a hospital service is connected.</p>
+        <p>
+          Queue number and wait information will appear here when a hospital
+          service is connected.
+        </p>
         <div class="info-rule"></div>
-        <div class="availability-note"><span class="availability-indicator"></span><span>Live queue data is unavailable in this prototype.</span></div>
+        <div class="availability-note">
+          <span class="availability-indicator"></span
+          ><span>Live queue data is unavailable in this prototype.</span>
+        </div>
       </section>
       <section class="panel nearby-tip">
         <MapPin :size="18" aria-hidden="true" />
-        <span>Hospital selection is not connected to a live directory. Entered details are only used to prepare this prototype request.</span>
+        <span
+          >Hospital selection is not connected to a live directory. Entered
+          details are only used to prepare this prototype request.</span
+        >
       </section>
     </aside>
   </div>

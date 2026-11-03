@@ -9,6 +9,31 @@
       content="MediQueue helps patients find the queue and appointment information available for their care."
     />
     <meta name="theme-color" content="#102f3b" />
+    <script>
+      (() => {
+        let preference = "system";
+        try {
+          const stored = window.localStorage.getItem("mediqueue-theme");
+          if (stored === "light" || stored === "dark" || stored === "system") {
+            preference = stored;
+          }
+        } catch {
+          // Use the system preference when storage is unavailable.
+        }
+
+        let systemTheme = "light";
+        try {
+          if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+            systemTheme = "dark";
+          }
+        } catch {
+          // The light theme is the safe fallback if matchMedia is unavailable.
+        }
+
+        document.documentElement.dataset.theme =
+          preference === "system" ? systemTheme : preference;
+      })();
+    </script>
     <title>MediQueue | A clearer way to navigate your care</title>
   </head>
   <body>

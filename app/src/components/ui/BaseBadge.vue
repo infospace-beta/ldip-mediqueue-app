@@ -15,12 +15,10 @@ export type BadgeTone = "neutral" | "brand" | "success" | "warning" | "danger";
 withDefaults(defineProps<{ tone?: BadgeTone }>(), { tone: "neutral" });
 
 const TONES: Record<BadgeTone, string> = {
-  neutral: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  brand: "bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-100",
-  success:
-    "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200",
-  warning:
-    "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
-  danger: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
+  neutral: "bg-[var(--app-surface-muted)] text-[var(--app-text-secondary)]",
+  brand: "bg-[var(--app-brand-soft)] text-[var(--app-brand-primary)]",
+  success: "bg-[var(--app-success-surface)] text-[var(--app-success)]",
+  warning: "bg-[var(--app-warning-surface)] text-[var(--app-warning)]",
+  danger: "bg-[var(--app-error-surface)] text-[var(--app-error)]",
 };
 </script>

@@ -1,6 +1,15 @@
 <template>
   <component :is="layout">
-    <RouterView />
+    <RouterView v-slot="{ Component: routeComponent }">
+      <Transition
+        :name="
+          route.meta.requiresAuth || route.meta.guestOnly ? '' : 'public-page'
+        "
+        mode="out-in"
+      >
+        <component :is="routeComponent" :key="route.path" />
+      </Transition>
+    </RouterView>
   </component>
 </template>
 

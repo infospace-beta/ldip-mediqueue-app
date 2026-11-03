@@ -1,6 +1,6 @@
 <script setup>
-import { RefreshCw } from '@lucide/vue'
-import QueueCard from '../components/QueueCard.vue'
+import { RefreshCw } from "@lucide/vue";
+import QueueCard from "../components/QueueCard.vue";
 </script>
 
 <template>
@@ -9,7 +9,10 @@ import QueueCard from '../components/QueueCard.vue'
       <div>
         <span class="eyebrow">QUEUE DETAILS</span>
         <h1>My queue</h1>
-        <p>Live status and refresh are unavailable until a hospital service is connected.</p>
+        <p>
+          Live status and refresh are unavailable until a hospital service is
+          connected.
+        </p>
       </div>
       <button
         class="button button-secondary"

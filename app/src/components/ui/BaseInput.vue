@@ -15,12 +15,12 @@
         :aria-invalid="hasError"
         :aria-describedby="hasError ? `${id}-error` : undefined"
         :class="[
-          'w-full rounded-lg border p-2.5 text-sm transition-colors disabled:opacity-50',
-          'bg-white dark:bg-gray-950',
+          'w-full rounded-lg border p-2.5 text-sm text-[var(--app-text-primary)] placeholder:text-[var(--app-text-secondary)] transition-colors disabled:opacity-50',
+          'bg-[var(--app-surface)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]',
           showPasswordToggle ? 'pr-16' : '',
           hasError
-            ? 'border-red-500'
-            : 'border-gray-300 hover:border-gray-400 dark:border-gray-700',
+            ? 'border-[var(--app-error)]'
+            : 'border-[var(--app-border)] hover:border-[var(--app-brand-primary)]',
         ]"
         @input="
           $emit('update:modelValue', ($event.target as HTMLInputElement).value)
@@ -33,13 +33,17 @@
         :aria-label="passwordVisible ? 'Hide password' : 'Show password'"
         :aria-pressed="passwordVisible"
         :aria-controls="id"
-        class="absolute inset-y-0 right-3 my-auto h-fit rounded text-sm font-medium text-brand-700 hover:text-brand-900"
+        class="absolute inset-y-0 right-3 my-auto h-fit rounded text-sm font-medium text-[var(--app-brand-primary)] hover:text-[var(--app-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]"
         @click="passwordVisible = !passwordVisible"
       >
         {{ passwordVisible ? "Hide" : "Show" }}
       </button>
     </div>
-    <p v-if="hasError" :id="`${id}-error`" class="mt-1 text-sm text-red-600">
+    <p
+      v-if="hasError"
+      :id="`${id}-error`"
+      class="mt-1 text-sm text-[var(--app-error)]"
+    >
       <span
         v-for="(fieldError, index) in errors"
         :key="fieldErrorKey(fieldError, index)"

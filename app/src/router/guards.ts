@@ -1,6 +1,7 @@
 import type { NavigationGuardWithThis } from "vue-router";
 import { useAuthStore } from "@/stores";
-import { ROUTE_NAMES } from "@/constants/routeNames";
+import { ROLE_DASHBOARD_NAMES, ROUTE_NAMES } from "@/constants/routeNames";
+import { isUserRole } from "@/types/models";
 
 /**
  * Auth guard.
@@ -13,6 +14,8 @@ import { ROUTE_NAMES } from "@/constants/routeNames";
 export const authGuard: NavigationGuardWithThis<undefined> = (to) => {
   const auth = useAuthStore();
 
+  if (auth.user && !isUserRole(auth.user.role)) auth.logout();
+
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const guestOnly = to.matched.some((record) => record.meta.guestOnly);
 
@@ -24,7 +27,21 @@ export const authGuard: NavigationGuardWithThis<undefined> = (to) => {
 
   /**Already logged in: keep them off the login page */
   if (guestOnly && auth.isLoggedIn) {
-    return { name: ROUTE_NAMES.home };
+    const role = auth.user?.role;
+    return role && isUserRole(role)
+      ? { name: ROLE_DASHBOARD_NAMES[role] }
+      : { name: ROUTE_NAMES.login };
+  }
+
+  const role = auth.user?.role;
+  const roleDenied =
+    auth.isLoggedIn &&
+    isUserRole(role) &&
+    to.matched.some(
+      (record) => record.meta.roles && !record.meta.roles.includes(role),
+    );
+  if (roleDenied && role && isUserRole(role)) {
+    return { name: ROLE_DASHBOARD_NAMES[role] };
   }
 
   return true;

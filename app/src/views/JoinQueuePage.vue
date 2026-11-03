@@ -1,11 +1,26 @@
 ﻿<script setup>
-import { ArrowLeft } from '@lucide/vue'
-import { useRouter } from 'vue-router'
-import JoinQueueForm from '../components/JoinQueueForm.vue'
+import { ArrowLeft } from "@lucide/vue";
+import { useRouter } from "vue-router";
+import JoinQueueForm from "../components/JoinQueueForm.vue";
 
-const router = useRouter()
+const router = useRouter();
 </script>
 
 <template>
-  <div class="section-page join-page"><div class="page-heading"><div><span class="eyebrow">FIND THE RIGHT CARE</span><h1>Join a queue</h1><p>Choose a hospital and service, then save your place in line.</p></div><button class="button button-quiet" type="button" @click="router.back()"><ArrowLeft :size="16" /> Back</button></div><JoinQueueForm /></div>
+  <div class="section-page join-page">
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">QUEUE REQUEST</span>
+        <h1>Prepare a queue request</h1>
+        <p>
+          Review the visit details you would provide. This prototype does not
+          submit a request or reserve a place in line.
+        </p>
+      </div>
+      <button class="button button-quiet" type="button" @click="router.back()">
+        <ArrowLeft :size="16" aria-hidden="true" /> Back
+      </button>
+    </div>
+    <JoinQueueForm />
+  </div>
 </template>

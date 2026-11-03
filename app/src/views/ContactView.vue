@@ -1,106 +1,182 @@
 <template>
-  <div class="page-narrow max-w-xl">
-    <h1 class="text-3xl font-semibold tracking-tight">Contact us</h1>
-    <p class="muted mt-3">
-      A public page that still talks to the API: validation runs in the browser,
-      and the server's own field errors are shown when it disagrees.
-    </p>
-
-    <BaseCard class="mt-8">
+  <div class="overflow-hidden bg-white text-[#102f3b]">
+    <section class="bg-[#f2f8f7]">
       <div
-        v-if="isSent"
-        class="flex flex-col items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/30"
-        role="status"
+        class="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:px-12 lg:py-20"
       >
-        <p class="font-medium text-green-800 dark:text-green-200">
-          Thanks - your message is on its way.
-        </p>
-        <BaseButton variant="ghost" size="sm" @click="isSent = false">
-          Send another
-        </BaseButton>
-      </div>
-
-      <form v-else class="flex flex-col gap-5" @submit.prevent="onSubmit">
-        <BaseInput
-          id="contact-name"
-          v-model="form.name"
-          label="Your name"
-          :errors="errorsFor('name')"
-        />
-        <BaseInput
-          id="contact-email"
-          v-model="form.email"
-          label="Email"
-          type="email"
-          :errors="errorsFor('email')"
-        />
-
-        <div class="w-full">
-          <label for="contact-message" class="mb-1 block text-sm font-medium">
-            Message
-          </label>
-          <textarea
-            id="contact-message"
-            v-model="form.message"
-            rows="5"
-            :class="[
-              'w-full rounded-lg border p-3 text-sm dark:bg-gray-950',
-              errorsFor('message').length
-                ? 'border-red-500'
-                : 'border-gray-300 dark:border-gray-700',
-            ]"
-          />
+        <div class="public-reveal max-w-xl">
           <p
-            v-if="errorsFor('message').length"
-            class="mt-1 text-sm text-red-600"
+            class="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[#087f6b]"
           >
-            <span
-              v-for="(messageError, index) in errorsFor('message')"
-              :key="fieldErrorKey(messageError, index)"
-            >
-              {{ fieldErrorMessage(messageError) }}
-            </span>
+            <span class="h-px w-8 bg-[#087f6b]" aria-hidden="true"></span>
+            Contact MediQueue
           </p>
+          <h1
+            class="mt-6 text-[2.75rem] font-semibold leading-[1.05] tracking-[-0.045em] sm:text-6xl"
+          >
+            We’re listening.
+          </h1>
+          <p
+            class="mt-6 max-w-lg text-base leading-7 text-[#536c72] sm:text-lg sm:leading-8"
+          >
+            Have a question about MediQueue? Use this form to check your message
+            before sending it.
+          </p>
+
+          <aside
+            class="mt-9 border-l-2 border-[#087f6b] py-1 pl-5"
+            aria-labelledby="contact-status-heading"
+          >
+            <p
+              id="contact-status-heading"
+              class="text-xs font-bold uppercase tracking-[0.16em] text-[#087f6b]"
+            >
+              Message delivery is not connected
+            </p>
+            <p class="mt-3 leading-7 text-[#536c72]">
+              This form does not send or store messages. Please do not include
+              sensitive health or personal information.
+            </p>
+          </aside>
+
+          <div class="mt-8 border-t border-[#dce9e7] pt-5">
+            <p class="text-sm font-semibold">Looking for an answer?</p>
+            <p class="mt-2 text-sm leading-6 text-[#536c72]">
+              Visit the FAQs for accurate information about what is and is not
+              connected yet.
+            </p>
+            <RouterLink
+              :to="{ name: ROUTE_NAMES.faq }"
+              class="mt-3 inline-flex min-h-9 items-center gap-2 text-sm font-semibold text-[#087f6b] underline decoration-[#9dcfc1] underline-offset-4 transition-colors hover:text-[#066c5c] focus-visible:rounded-sm"
+            >
+              Browse FAQs
+              <ArrowRight :size="16" aria-hidden="true" />
+            </RouterLink>
+          </div>
         </div>
 
-        <p v-if="error" class="text-sm text-red-600" role="alert">
-          {{ error }}
-        </p>
+        <form
+          class="flex flex-col gap-6 rounded-[1.25rem] bg-white p-5 shadow-[0_12px_42px_-32px_rgba(16,47,59,0.35)] ring-1 ring-[#dce9e7] sm:p-8 lg:p-10"
+          novalidate
+          @submit.prevent="onSubmit"
+          @input="submissionStatus = ''"
+        >
+          <div class="border-b border-[#dce9e7] pb-5">
+            <p
+              class="text-xs font-bold uppercase tracking-[0.16em] text-[#087f6b]"
+            >
+              Your message
+            </p>
+            <h2 class="mt-2 text-2xl font-semibold tracking-tight">
+              Prepare a note
+            </h2>
+            <p class="mt-2 text-sm leading-6 text-[#536c72]">
+              We’ll check that each required field is complete.
+            </p>
+          </div>
 
-        <BaseButton type="submit" block :loading="isSending">
-          Send message
-        </BaseButton>
-      </form>
-    </BaseCard>
+          <BaseInput
+            id="contact-name"
+            v-model="form.name"
+            label="Your name"
+            autocomplete="name"
+            :errors="v$.name.$errors"
+            @blur="v$.name.$touch()"
+          />
+          <BaseInput
+            id="contact-email"
+            v-model="form.email"
+            label="Email address"
+            type="email"
+            autocomplete="email"
+            :errors="v$.email.$errors"
+            @blur="v$.email.$touch()"
+          />
+          <div class="w-full">
+            <label for="contact-message" class="mb-1 block text-sm font-medium">
+              Message
+            </label>
+            <textarea
+              id="contact-message"
+              v-model="form.message"
+              rows="6"
+              aria-describedby="contact-message-hint"
+              :aria-invalid="v$.message.$error"
+              :class="[
+                'w-full rounded-lg border bg-white p-3 text-sm text-[#102f3b] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]',
+                v$.message.$error
+                  ? 'border-red-500'
+                  : 'border-[#dce9e7] hover:border-[#087f6b]',
+              ]"
+              @blur="v$.message.$touch()"
+            />
+            <p id="contact-message-hint" class="mt-1 text-sm text-[#536c72]">
+              Please write at least 10 characters.
+            </p>
+            <p
+              v-if="v$.message.$error"
+              class="mt-1 text-sm text-red-700"
+              role="alert"
+            >
+              {{ v$.message.$errors[0]?.$message }}
+            </p>
+          </div>
 
-    <p class="muted mt-4 text-xs">
-      Try an <code>@spam.test</code> address to see the server's 422 land back
-      on the field.
-    </p>
+          <p
+            v-if="submissionStatus"
+            class="border-l-2 border-[#087f6b] bg-[#f2f8f7] p-4 text-sm leading-6 text-[#102f3b]"
+            role="status"
+          >
+            {{ submissionStatus }}
+          </p>
+          <BaseButton type="submit" block class="min-h-12 rounded-lg">
+            Review message
+          </BaseButton>
+          <p class="text-center text-xs leading-5 text-[#536c72]">
+            Reviewing the form does not send or save your message.
+          </p>
+        </form>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
+import { reactive, ref } from "vue";
+import useVuelidate from "@vuelidate/core";
+import { email, helpers, minLength, required } from "@vuelidate/validators";
+import { ArrowRight } from "@lucide/vue";
+import { RouterLink } from "vue-router";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
-import { useContactForm } from "@/composables/useContactForm";
-import {
-  fieldErrorKey,
-  fieldErrorMessage,
-  type FieldError,
-} from "@/utils/fieldErrors";
+import { ROUTE_NAMES } from "@/constants/routeNames";
 
-const { form, v$, isSending, isSent, error, fieldErrors, submit } =
-  useContactForm();
+const form = reactive({ name: "", email: "", message: "" });
+const rules = {
+  name: {
+    required: helpers.withMessage("Please enter your name.", required),
+  },
+  email: {
+    required: helpers.withMessage("Please enter your email address.", required),
+    email: helpers.withMessage("Enter a valid email address.", email),
+  },
+  message: {
+    required: helpers.withMessage("Please enter a message.", required),
+    minLength: helpers.withMessage(
+      "Please write at least 10 characters.",
+      minLength(10),
+    ),
+  },
+};
 
-/**Client-side rules first, then whatever the server said about that field */
-type ContactField = keyof typeof form;
+const v$ = useVuelidate(rules, form);
+const submissionStatus = ref("");
 
-const errorsFor = (field: ContactField): FieldError[] => [
-  ...v$.value[field].$errors,
-  ...(fieldErrors.value[field] ?? []),
-];
+const onSubmit = async () => {
+  submissionStatus.value = "";
+  if (!(await v$.value.$validate())) return;
 
-const onSubmit = () => submit();
+  submissionStatus.value =
+    "Your message passes the form checks, but message submission is not connected. Nothing was sent or stored.";
+};
 </script>
