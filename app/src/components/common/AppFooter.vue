@@ -1,94 +1,104 @@
 <template>
   <footer class="border-t border-[#dce9e7] bg-[#f2f8f7]">
-    <div class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12">
-      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_0.8fr]">
-        <div class="max-w-sm">
+    <div
+      class="mx-auto max-w-8xl px-5 py-12 sm:px-8 sm:py-14 lg:px-12 lg:py-16"
+    >
+      <div
+        class="grid min-w-0 grid-cols-1 gap-x-12 gap-y-10 md:grid-cols-2 md:gap-x-10 md:gap-y-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(11rem,0.8fr)_minmax(13rem,0.95fr)] lg:gap-x-16 lg:gap-y-0"
+      >
+        <section class="min-w-0 md:col-span-2 lg:col-span-1">
           <RouterLink
             :to="{ name: ROUTE_NAMES.landing }"
             class="inline-flex rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#087f6b]"
             aria-label="MediQueue home"
           >
-            <AppLogo size="md" />
+            <AppLogo size="lg" />
           </RouterLink>
-          <p class="mt-4 text-sm leading-6 text-[#536c72]">
-            MediQueue is being developed to help patients and care teams
-            organize queue and visit information. Live hospital services are not
-            connected yet.
+          <p class="mt-5 max-w-lg text-base leading-7 text-[#536c72]">
+            A healthcare queue and visit-management platform in development,
+            designed to help patients prepare queue requests and care teams
+            organize visit information. Live hospital services are not connected
+            yet.
           </p>
-          <p class="mt-3 text-sm text-[#536c72]">
-            Questions?
-            <RouterLink
-              :to="{ name: ROUTE_NAMES.contact }"
-              class="font-semibold text-[#087f6b] underline decoration-[#9dcfc1] underline-offset-4 hover:text-[#066c5c]"
-            >
-              Contact us
-            </RouterLink>
-          </p>
-        </div>
+        </section>
 
         <nav
           aria-label="Explore MediQueue"
-          class="flex flex-col items-start gap-3"
+          class="flex min-w-0 flex-col items-stretch gap-1"
         >
-          <h2 class="text-sm font-semibold text-[#102f3b]">Explore</h2>
+          <h2
+            class="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#102f3b]"
+          >
+            Explore
+          </h2>
+          <RouterLink
+            :to="{ name: ROUTE_NAMES.landing }"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
+          >
+            Home
+          </RouterLink>
           <RouterLink
             :to="{ name: ROUTE_NAMES.howItWorks }"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
-            How it works
+            How It Works
           </RouterLink>
           <RouterLink
             :to="{ name: ROUTE_NAMES.features }"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
             Features
           </RouterLink>
           <RouterLink
             :to="{ name: ROUTE_NAMES.about }"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
-            About MediQueue
+            About
           </RouterLink>
           <RouterLink
             :to="{ name: ROUTE_NAMES.faq }"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
-            Frequently asked questions
+            FAQs
           </RouterLink>
           <RouterLink
             :to="{ name: ROUTE_NAMES.contact }"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
-            Contact us
+            Contact
           </RouterLink>
         </nav>
 
         <nav
           aria-label="Patient services"
-          class="flex flex-col items-start gap-3"
+          class="flex min-w-0 flex-col items-stretch gap-1"
         >
-          <h2 class="text-sm font-semibold text-[#102f3b]">Patient services</h2>
+          <h2
+            class="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#102f3b]"
+          >
+            Patient services
+          </h2>
           <RouterLink
             to="/patient/dashboard"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
             Patient portal
           </RouterLink>
           <RouterLink
             to="/patient/join-queue"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
             Prepare a queue request
           </RouterLink>
           <RouterLink
             to="/patient/appointments"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
             Appointments
           </RouterLink>
           <RouterLink
             to="/patient/emergency"
-            class="text-sm text-[#536c72] hover:text-[#087f6b] hover:underline"
+            class="flex min-h-11 w-full items-center rounded-sm py-2 text-base leading-6 text-[#536c72] transition-colors hover:text-[#087f6b] hover:underline hover:decoration-[#9dcfc1] hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087f6b]"
           >
             Emergency information
           </RouterLink>
@@ -96,12 +106,12 @@
       </div>
 
       <div
-        class="mt-9 flex flex-col gap-2 border-t border-[#dce9e7] pt-5 text-xs text-[#61777b] sm:flex-row sm:items-center sm:justify-between"
+        class="mt-10 flex flex-col gap-3 border-t border-[#dce9e7] pt-5 text-sm leading-6 text-[#536c72] sm:flex-row sm:items-center sm:justify-between sm:gap-6"
       >
         <span>© {{ currentYear }} MediQueue</span>
-        <span>
+        <p class="max-w-2xl sm:text-right">
           MediQueue does not replace emergency services or clinical advice.
-        </span>
+        </p>
       </div>
     </div>
   </footer>

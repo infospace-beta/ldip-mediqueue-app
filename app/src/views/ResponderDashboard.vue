@@ -26,6 +26,11 @@ const {
   trigger: ".responder-menu-button",
   firstNavigationItem: ".responder-nav .responder-nav-link",
 });
+
+function setNavigationRoot(element: unknown) {
+  mobileNavigationRoot.value = element instanceof HTMLElement ? element : null;
+}
+
 const filteredEmergencyRequests = computed(() =>
   filterLocalRecords(emergencyRequests.value),
 );
@@ -47,7 +52,7 @@ function filterLocalRecords(records: ResponderRecord[]) {
 </script>
 
 <template>
-  <div ref="mobileNavigationRoot" class="responder-app">
+  <div :ref="setNavigationRoot" class="responder-app">
     <ResponderSidebar
       :open="mobileNavigationOpen"
       :mobile-viewport="mobileViewport"

@@ -187,7 +187,9 @@ describe("DoctorDashboard", () => {
     const dashboard = await mountDashboard();
     const menuButton = dashboard.get(".doctor-menu-trigger");
     const sidebar = dashboard.get(".doctor-sidebar");
-    const firstLink = dashboard.get(".doctor-navigation .doctor-nav-link");
+    const firstLink = dashboard.get<HTMLButtonElement>(
+      ".doctor-navigation .doctor-nav-link",
+    );
 
     expect(menuButton.attributes("aria-expanded")).toBe("false");
     expect(menuButton.attributes("aria-controls")).toBe(

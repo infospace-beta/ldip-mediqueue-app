@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Activity } from "@lucide/vue";
 import ThemeSwitcher from "@/components/common/ThemeSwitcher.vue";
 import { useAuthStore } from "@/stores/auth.store";
 import { useMobileNavigation } from "@/composables/useMobileNavigation";
@@ -32,6 +31,11 @@ const {
   trigger: ".doctor-menu-trigger",
   firstNavigationItem: ".doctor-navigation .doctor-nav-link",
 });
+
+function setNavigationRoot(element: unknown) {
+  mobileNavigationRoot.value = element instanceof HTMLElement ? element : null;
+}
+
 const searchQuery = ref("");
 const appointmentStatus = ref<(typeof appointmentStatuses)[number]>("All");
 const patientStatus = ref<(typeof patientStatuses)[number]>("All");
@@ -98,7 +102,7 @@ function navigateTo(section: DoctorSection) {
 </script>
 
 <template>
-  <div ref="mobileNavigationRoot" class="doctor-workspace">
+  <div :ref="setNavigationRoot" class="doctor-workspace">
     <a class="doctor-skip-link" href="#doctor-main-content">
       Skip to main content
     </a>

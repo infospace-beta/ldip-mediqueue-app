@@ -2,7 +2,7 @@
   <div class="overflow-hidden bg-white text-[#102f3b]">
     <section class="bg-[#f2f8f7]">
       <div
-        class="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:px-12 lg:py-20"
+        class="mx-auto grid max-w-8xl gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:px-12 lg:py-20"
       >
         <div class="public-reveal max-w-xl">
           <p

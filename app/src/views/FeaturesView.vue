@@ -2,7 +2,7 @@
   <div class="overflow-hidden bg-white text-[#102f3b]">
     <section class="bg-[#f2f8f7]">
       <div
-        class="mx-auto grid max-w-7xl items-center gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:px-12 lg:py-20"
+        class="mx-auto grid max-w-8xl items-center gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:px-12 lg:py-20"
       >
         <div class="public-reveal max-w-2xl">
           <p
@@ -70,7 +70,7 @@
 
     <section id="platform-foundation" class="scroll-mt-24 bg-white">
       <div
-        class="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24"
+        class="mx-auto max-w-8xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24"
       >
         <div
           class="grid gap-6 border-b border-[#dce9e7] pb-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16"
@@ -151,7 +151,7 @@
 
     <section class="bg-[#102f3b] text-white">
       <div
-        class="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 sm:py-18 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-20 lg:px-12 lg:py-20"
+        class="mx-auto grid max-w-8xl gap-10 px-5 py-14 sm:px-8 sm:py-18 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-20 lg:px-12 lg:py-20"
       >
         <div class="max-w-xl">
           <p
@@ -194,7 +194,7 @@
       </div>
       <div class="border-t border-white/10">
         <p
-          class="mx-auto max-w-7xl px-5 py-5 text-xs leading-5 text-[#c5d5df] sm:px-8 lg:px-12"
+          class="mx-auto max-w-8xl px-5 py-5 text-xs leading-5 text-[#c5d5df] sm:px-8 lg:px-12"
           role="note"
         >
           No live queue counts, appointment availability, hospital records, or
@@ -205,7 +205,7 @@
 
     <section class="bg-[#f2f8f7]">
       <div
-        class="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-12 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-12 lg:py-16"
+        class="mx-auto flex max-w-8xl flex-col gap-6 px-5 py-12 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-12 lg:py-16"
       >
         <div class="max-w-2xl">
           <p

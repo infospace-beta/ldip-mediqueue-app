@@ -2,7 +2,7 @@
   <div class="overflow-hidden bg-white text-[#102f3b]">
     <section class="bg-[#f2f8f7]">
       <div
-        class="mx-auto grid max-w-7xl items-center gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:px-12 lg:py-20"
+        class="mx-auto grid max-w-8xl items-center gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:px-12 lg:py-20"
       >
         <div class="public-reveal max-w-2xl">
           <p
@@ -60,7 +60,7 @@
 
     <section class="bg-white">
       <div
-        class="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24"
+        class="mx-auto max-w-8xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24"
       >
         <div
           class="grid gap-6 border-b border-[#dce9e7] pb-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16"
@@ -122,7 +122,7 @@
 
     <section class="bg-[#102f3b] text-white">
       <div
-        class="mx-auto grid max-w-7xl gap-6 px-5 py-12 sm:px-8 md:grid-cols-[1fr_auto] md:items-center lg:px-12 lg:py-16"
+        class="mx-auto grid max-w-8xl gap-6 px-5 py-12 sm:px-8 md:grid-cols-[1fr_auto] md:items-center lg:px-12 lg:py-16"
       >
         <div class="max-w-2xl">
           <p
