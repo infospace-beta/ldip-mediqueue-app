@@ -24,6 +24,15 @@
         :errors="v$.fullName.$errors"
       />
       <BaseInput
+        id="signup-username"
+        v-model="formData.username"
+        label="Username"
+        autocomplete="username"
+        placeholder="Choose a username"
+        hint="Use 3–50 letters, numbers, dots, underscores, or hyphens."
+        :errors="v$.username.$errors"
+      />
+      <BaseInput
         id="signup-email"
         v-model="formData.email"
         label="Email address"
@@ -59,16 +68,31 @@
       >
         {{ submissionError }}
       </p>
+      <output
+        v-if="registrationComplete"
+        class="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-950"
+        role="status"
+      >
+        Your account was created. Continue to sign in.
+      </output>
 
       <BaseButton
         type="submit"
         block
         class="auth-submit"
         :loading="isSubmitting"
-        :disabled="isSubmitting"
+        :disabled="isSubmitting || registrationComplete"
       >
-        Create account
+        {{ registrationComplete ? "Account created" : "Create account" }}
       </BaseButton>
+
+      <RouterLink
+        v-if="registrationComplete"
+        :to="{ name: ROUTE_NAMES.login }"
+        class="auth-link text-center"
+      >
+        Continue to sign in
+      </RouterLink>
 
       <p class="text-center text-sm">
         Already have an account?
@@ -80,8 +104,8 @@
 
     <template #footer>
       <p class="auth-note" role="note">
-        Online registration is not available yet. Submitting this form will not
-        create an account.
+        Registration creates a patient account in MediQueue. Sign in after
+        successful registration to access patient services.
       </p>
     </template>
   </BaseCard>
@@ -90,6 +114,7 @@
 <script setup lang="ts">
 import { reactive, ref, toRef } from "vue";
 import { RouterLink } from "vue-router";
+import { useRouter } from "vue-router";
 import useVuelidate from "@vuelidate/core";
 import {
   email,
@@ -102,8 +127,12 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { ROUTE_NAMES } from "@/constants/routeNames";
+import { authService } from "@/services/auth.service";
+import { apiMessage } from "@/utils/errors";
 
+const router = useRouter();
 const formData = reactive({
+  username: "",
   fullName: "",
   email: "",
   password: "",
@@ -111,6 +140,17 @@ const formData = reactive({
 });
 
 const rules = {
+  username: {
+    required: helpers.withMessage("Please choose a username.", required),
+    minLength: helpers.withMessage(
+      "Use at least 3 characters.",
+      minLength(3),
+    ),
+    validCharacters: helpers.withMessage(
+      "Use only letters, numbers, dots, underscores, and hyphens.",
+      helpers.regex(/^[a-zA-Z0-9._-]+$/),
+    ),
+  },
   fullName: {
     required: helpers.withMessage("Please enter your full name.", required),
   },
@@ -134,17 +174,28 @@ const rules = {
 const v$ = useVuelidate(rules, formData);
 const isSubmitting = ref(false);
 const submissionError = ref<string | null>(null);
+const registrationComplete = ref(false);
 
 const onSubmit = async () => {
-  if (isSubmitting.value) return;
+  if (isSubmitting.value || registrationComplete.value) return;
   submissionError.value = null;
   isSubmitting.value = true;
 
   try {
     if (!(await v$.value.$validate())) return;
 
-    submissionError.value =
-      "Account registration is not connected to a service yet. No account was created.";
+    await authService.registerPatient({
+      username: formData.username.trim(),
+      fullName: formData.fullName.trim(),
+      email: formData.email.trim(),
+      password: formData.password,
+    });
+    registrationComplete.value = true;
+    window.setTimeout(() => {
+      void router.push({ name: ROUTE_NAMES.login });
+    }, 1200);
+  } catch (error) {
+    submissionError.value = apiMessage(error, "Registration failed.");
   } finally {
     isSubmitting.value = false;
   }

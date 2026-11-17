@@ -3,7 +3,6 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from "axios";
-import { fakeBackendAdapter } from "@/mocks/fake-backend";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 /**
@@ -12,16 +11,13 @@ import { STORAGE_KEYS } from "@/constants/storageKeys";
  */
 
 const ROOT_URL = import.meta.env.VITE_API_URL;
-const USE_FAKE_BACKEND = import.meta.env.VITE_MODE === "local";
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: ROOT_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  /**In local mode the fake backend answers /login, /users and /contact and
-   * passes everything else through */
-  ...(USE_FAKE_BACKEND ? { adapter: fakeBackendAdapter } : {}),
+
 });
 
 /**Attach the bearer token, if we have one */

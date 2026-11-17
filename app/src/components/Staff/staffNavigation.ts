@@ -37,7 +37,7 @@ export const staffNavigation = [
     label: "Overview",
     title: "Hospital operations",
     description:
-      "Operational summaries will be available when an authorized hospital service is connected.",
+      "Live operational summaries from the assigned hospital.",
     icon: LayoutDashboard,
   },
   {
@@ -45,7 +45,7 @@ export const staffNavigation = [
     label: "Queue monitoring",
     title: "Queue monitoring",
     description:
-      "Queue positions and service status will appear here when the authorized hospital queue service is connected. No live queue activity is shown.",
+      "Review and manage live department queue tickets.",
     icon: Clock3,
   },
   {
@@ -53,7 +53,7 @@ export const staffNavigation = [
     label: "Appointments and patient flow",
     title: "Appointments and patient flow",
     description:
-      "Appointment schedules and visit progress shared with staff will appear here when an authorized service is connected.",
+      "Track live patient queue progress. The backend does not provide a staff appointment schedule.",
     icon: CalendarDays,
   },
   {
@@ -61,7 +61,7 @@ export const staffNavigation = [
     label: "Patients",
     title: "Patients",
     description:
-      "Patient records are unavailable until a connected service confirms that this staff account is authorized to view them.",
+      "View patient identifiers for active queue tickets in authorized departments.",
     icon: UsersRound,
   },
   {
@@ -69,7 +69,7 @@ export const staffNavigation = [
     label: "Departments and services",
     title: "Departments and services",
     description:
-      "Department details and service availability will appear here when verified hospital records are connected.",
+      "Browse active departments returned by the assigned hospital directory.",
     icon: ClipboardList,
   },
   {
@@ -77,7 +77,7 @@ export const staffNavigation = [
     label: "Medical staff",
     title: "Medical staff",
     description:
-      "Staff rosters and hospital permissions require an authorized administration service. No membership or staffing details are assumed.",
+      "Review staff and doctor rosters returned for the assigned hospital.",
     icon: UsersRound,
   },
   {
@@ -85,7 +85,7 @@ export const staffNavigation = [
     label: "Emergency activity",
     title: "Emergency activity",
     description:
-      "Emergency activity is unavailable. This dashboard does not receive or dispatch emergency requests.",
+      "Review emergency cases returned by the assigned hospital service. This does not dispatch emergency services.",
     icon: ShieldAlert,
   },
   {
@@ -93,21 +93,21 @@ export const staffNavigation = [
     label: "Notifications",
     title: "Notifications",
     description:
-      "Updates from authorized hospital workflows will appear here when notification services are connected.",
+      "Read notifications for the signed-in staff account.",
     icon: Bell,
   },
   {
     id: "profile",
     label: "My profile",
     title: "My profile",
-    description: "Staff profile information is not available in this preview.",
+    description: "Review account profile details from the authenticated session.",
     icon: UserRound,
   },
   {
     id: "settings",
     label: "Settings",
     title: "Settings",
-    description: "Staff workspace settings are unavailable in this preview.",
+    description: "No backend endpoint currently exposes staff workspace preferences.",
     icon: Settings,
   },
 ] as const satisfies readonly StaffNavigationItem[];

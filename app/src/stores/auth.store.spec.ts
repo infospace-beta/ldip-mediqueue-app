@@ -10,7 +10,10 @@ import { notifications, patient } from "@/data/patient";
 import { emergencyRequests } from "@/components/Responder/data.js";
 
 vi.mock("@/services/auth.service", () => ({
-  authService: { login: vi.fn() },
+  authService: {
+    login: vi.fn(),
+    getCurrentUser: vi.fn(),
+  },
 }));
 
 vi.mock("@/services/hospitalWorkspace.service", () => ({
@@ -27,6 +30,21 @@ const TEST_USER: User = {
   role: "patient",
 };
 
+const BACKEND_LOGIN_RESPONSE = {
+  accessToken: "test-access-token",
+  tokenType: "Bearer",
+  expiresIn: 900,
+};
+
+const BACKEND_PROFILE = {
+  id: 1,
+  username: "test@gmail.com",
+  email: "test@gmail.com",
+  fullName: "Test User",
+  role: "PATIENT",
+  hospitalId: null,
+};
+
 describe("auth store", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -34,22 +52,30 @@ describe("auth store", () => {
     vi.clearAllMocks();
   });
 
-  it("stores the user as an object, not a JSON string", async () => {
+  it("stores the backend user profile and access token", async () => {
     vi.mocked(authService.login).mockResolvedValue({
-      data: { user: TEST_USER, token: "fake-jwt-token" },
+      data: BACKEND_LOGIN_RESPONSE,
     } as Awaited<ReturnType<typeof authService.login>>);
+
+    vi.mocked(authService.getCurrentUser).mockResolvedValue({
+      data: BACKEND_PROFILE,
+    } as Awaited<ReturnType<typeof authService.getCurrentUser>>);
 
     const auth = useAuthStore();
     const ok = await auth.login({ email: "test@gmail.com", password: "test" });
 
     expect(ok).toBe(true);
-    expect(auth.user).toEqual(TEST_USER);
+    expect(auth.user?.id).toBe(1);
+    expect(auth.user?.username).toBe("test@gmail.com");
     expect(auth.user?.firstName).toBe("Test");
+    expect(auth.user?.lastName).toBe("User");
+    expect(auth.user?.role).toBe("patient");
     expect(auth.isLoggedIn).toBe(true);
-    expect(auth.token).toBe("fake-jwt-token");
+    expect(auth.token).toBe("test-access-token");
+    expect(authService.getCurrentUser).toHaveBeenCalledOnce();
   });
 
-  it("surfaces the API message and stays logged out on failure", async () => {
+  it("surfaces the API message and stays logged out on login failure", async () => {
     vi.mocked(authService.login).mockRejectedValue(
       new AxiosError("Bad request", "400", undefined, null, {
         status: 400,
@@ -65,15 +91,19 @@ describe("auth store", () => {
     expect(auth.isLoggedIn).toBe(false);
   });
 
-  it.each([undefined, "unknown"])(
-    "rejects a login response with missing or unknown role (%s)",
+  it.each([undefined, "UNKNOWN"])(
+    "rejects a backend profile with missing or unknown role (%s)",
     async (role) => {
       vi.mocked(authService.login).mockResolvedValue({
-        data: {
-          user: { ...TEST_USER, role } as unknown as User,
-          token: "unexpected-token",
-        },
+        data: BACKEND_LOGIN_RESPONSE,
       } as Awaited<ReturnType<typeof authService.login>>);
+
+      vi.mocked(authService.getCurrentUser).mockResolvedValue({
+        data: {
+          ...BACKEND_PROFILE,
+          role,
+        },
+      } as Awaited<ReturnType<typeof authService.getCurrentUser>>);
 
       const auth = useAuthStore();
       const ok = await auth.login({
@@ -90,8 +120,12 @@ describe("auth store", () => {
 
   it("clears the session on logout", async () => {
     vi.mocked(authService.login).mockResolvedValue({
-      data: { user: TEST_USER, token: "fake-jwt-token" },
+      data: BACKEND_LOGIN_RESPONSE,
     } as Awaited<ReturnType<typeof authService.login>>);
+
+    vi.mocked(authService.getCurrentUser).mockResolvedValue({
+      data: BACKEND_PROFILE,
+    } as Awaited<ReturnType<typeof authService.getCurrentUser>>);
 
     const auth = useAuthStore();
     await auth.login({ email: "test@gmail.com", password: "test" });
@@ -140,6 +174,7 @@ describe("auth store", () => {
         status: "active",
       },
     ]);
+
     const workspace = useHospitalWorkspaceStore();
     await workspace.loadAssignments(TEST_USER.id);
     workspace.selectHospital("hospital-1");

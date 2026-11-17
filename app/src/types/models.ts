@@ -25,6 +25,9 @@ export interface User {
   firstName: string;
   lastName: string;
   role: UserRole;
+  email?: string;
+  backendRole?: string;
+  hospitalId?: number | null;
   /**Only ever present on the mock records, never on an API response */
   password?: string;
 }
@@ -46,15 +49,24 @@ export interface HospitalLocation {
 export interface Hospital {
   id: string;
   name: string;
+  hospitalType?: "PUBLIC" | "PRIVATE" | "FAITH_BASED";
   registrationIdentifier?: string;
+  phone?: string;
+  email?: string;
   location?: HospitalLocation;
   status: HospitalStatus;
 }
 
 export interface HospitalRegistrationInput {
   name: string;
-  registrationIdentifier?: string;
-  location?: HospitalLocation;
+  registrationNumber?: string;
+  hospitalType: "PUBLIC" | "PRIVATE" | "FAITH_BASED";
+  address?: string;
+  county?: string;
+  town?: string;
+  phone?: string;
+  email?: string;
+  status: "ACTIVE" | "INACTIVE";
 }
 
 export type HospitalAssignmentStatus =

@@ -5,21 +5,25 @@ import { helpers } from "@vuelidate/validators";
 import { Building2, ClipboardList, Search } from "@lucide/vue";
 import StateEmpty from "@/components/ui/StateEmpty.vue";
 import { hospitalManagementService } from "@/services/hospitalManagement.service";
+import { useAuthStore } from "@/stores/auth.store";
 import type {
   Hospital,
-  HospitalLocation,
   HospitalRegistrationInput,
 } from "@/types/models";
 
 interface HospitalRegistrationForm {
   name: string;
-  registrationIdentifier: string;
+  registrationNumber: string;
+  hospitalType: HospitalRegistrationInput["hospitalType"];
   address: string;
-  city: string;
-  region: string;
-  country: string;
+  county: string;
+  town: string;
+  phone: string;
+  email: string;
+  status: HospitalRegistrationInput["status"];
 }
 
+const auth = useAuthStore();
 const hospitals = ref<Hospital[]>([]);
 const isLoading = ref(false);
 const isSubmitting = ref(false);
@@ -27,13 +31,19 @@ const directoryLoaded = ref(false);
 const directoryError = ref<string | null>(null);
 const registrationMessage = ref<string | null>(null);
 const searchQuery = ref("");
+const isSystemAdmin = computed(
+  () => auth.user?.backendRole === "SYSTEM_ADMIN",
+);
 const form = reactive<HospitalRegistrationForm>({
   name: "",
-  registrationIdentifier: "",
+  registrationNumber: "",
+  hospitalType: "PUBLIC",
   address: "",
-  city: "",
-  region: "",
-  country: "",
+  county: "",
+  town: "",
+  phone: "",
+  email: "",
+  status: "ACTIVE",
 });
 
 const rules = {
@@ -53,7 +63,11 @@ const filteredHospitals = computed(() => {
     const location = hospital.location
       ? Object.values(hospital.location).join(" ")
       : "";
-    return [hospital.name, hospital.registrationIdentifier, location]
+    return [
+      hospital.name,
+      hospital.registrationIdentifier,
+      location,
+    ]
       .filter(Boolean)
       .join(" ")
       .toLocaleLowerCase()
@@ -61,13 +75,11 @@ const filteredHospitals = computed(() => {
   });
 });
 
-function locationSummary(location?: HospitalLocation): string {
-  if (!location) return "Location not provided";
+function locationSummary(hospital: Hospital): string {
   const parts = [
-    location.address,
-    location.city,
-    location.region,
-    location.country,
+    hospital.location?.address,
+    hospital.location?.city,
+    hospital.location?.region,
   ].filter((part): part is string => Boolean(part?.trim()));
   return parts.length ? parts.join(", ") : "Location not provided";
 }
@@ -76,38 +88,28 @@ async function loadHospitals() {
   isLoading.value = true;
   directoryError.value = null;
   try {
-    hospitals.value = await hospitalManagementService.getHospitals();
+    if (isSystemAdmin.value) {
+      hospitals.value = await hospitalManagementService.getHospitals();
+    } else if (auth.user?.hospitalId) {
+      hospitals.value = [
+        await hospitalManagementService.getHospital(auth.user.hospitalId),
+      ];
+    } else {
+      throw new Error(
+        "No hospital is associated with this administrator account.",
+      );
+    }
     directoryLoaded.value = true;
   } catch (error) {
     directoryLoaded.value = false;
     directoryError.value =
       error instanceof Error
         ? error.message
-        : "Unable to load the hospital directory.";
-    console.error("Error loading hospital directory:", error);
+        : "Unable to load hospital information.";
+    console.error("Error loading hospital information:", error);
   } finally {
     isLoading.value = false;
   }
-}
-
-function makeRegistrationInput(): HospitalRegistrationInput {
-  const locationParts = {
-    address: form.address.trim(),
-    city: form.city.trim(),
-    region: form.region.trim(),
-    country: form.country.trim(),
-  };
-  const location = Object.values(locationParts).some(Boolean)
-    ? locationParts
-    : undefined;
-
-  return {
-    name: form.name.trim(),
-    ...(form.registrationIdentifier.trim()
-      ? { registrationIdentifier: form.registrationIdentifier.trim() }
-      : {}),
-    ...(location ? { location } : {}),
-  };
 }
 
 async function submitRegistration() {
@@ -117,61 +119,64 @@ async function submitRegistration() {
 
   isSubmitting.value = true;
   try {
-    const input = makeRegistrationInput();
+    const input: HospitalRegistrationInput = {
+      name: form.name.trim(),
+      registrationNumber: form.registrationNumber.trim() || undefined,
+      hospitalType: form.hospitalType,
+      address: form.address.trim() || undefined,
+      county: form.county.trim() || undefined,
+      town: form.town.trim() || undefined,
+      phone: form.phone.trim() || undefined,
+      email: form.email.trim() || undefined,
+      status: form.status,
+    };
     await hospitalManagementService.registerHospital(input);
-    registrationMessage.value =
-      "Registration details were accepted by the hospital service.";
+    registrationMessage.value = "Hospital registered successfully.";
+    form.name = "";
+    form.registrationNumber = "";
+    form.address = "";
+    form.county = "";
+    form.town = "";
+    form.phone = "";
+    form.email = "";
     await loadHospitals();
   } catch (error) {
     registrationMessage.value =
       error instanceof Error
-        ? `${error.message} Your validated details were not submitted or saved.`
-        : "Hospital registration is unavailable. Your details were not submitted or saved.";
+        ? `Hospital registration failed: ${error.message}`
+        : "Hospital registration failed.";
   } finally {
     isSubmitting.value = false;
   }
 }
 
-onMounted(() => {
-  void loadHospitals();
-});
+onMounted(() => void loadHospitals());
 </script>
 
 <template>
-  <section
-    class="admin-page-heading"
-    aria-labelledby="hospital-management-title"
-  >
+  <section class="admin-page-heading" aria-labelledby="hospital-management-title">
     <div>
       <span class="admin-eyebrow">ORGANIZATION</span>
       <h2 id="hospital-management-title">Hospital Management</h2>
-      <p>
-        Review hospital information and prepare registration details. Hospital
-        records and registration are unavailable until the backend service is
-        connected.
-      </p>
+      <p>Review live hospital records and register hospitals using the administration service.</p>
     </div>
-    <span class="admin-availability-badge">Backend integration pending</span>
+    <span class="admin-availability-badge">
+      {{ isLoading ? "Loading" : isSystemAdmin ? "Connected" : "Hospital scope" }}
+    </span>
   </section>
 
   <section class="admin-hospital-layout" aria-label="Hospital management">
-    <section
-      class="admin-hospital-panel"
-      aria-labelledby="hospital-directory-title"
-    >
+    <section class="admin-hospital-panel" aria-labelledby="hospital-directory-title">
       <div class="admin-section-heading">
         <div class="admin-section-title">
-          <span class="admin-section-icon" aria-hidden="true">
-            <Building2 :size="19" />
-          </span>
+          <span class="admin-section-icon" aria-hidden="true"><Building2 :size="19" /></span>
           <div>
             <span class="admin-eyebrow">HOSPITAL RECORDS</span>
             <h2 id="hospital-directory-title">Hospital directory</h2>
           </div>
         </div>
-        <span class="admin-unavailable-badge">Verified data only</span>
+        <span class="admin-unavailable-badge">Live records</span>
       </div>
-
       <label class="admin-hospital-search" for="hospital-directory-search">
         <Search :size="17" aria-hidden="true" />
         <span class="sr-only">Search hospitals</span>
@@ -183,87 +188,55 @@ onMounted(() => {
           :disabled="isLoading || !hospitals.length"
         />
       </label>
-
       <p v-if="isLoading" class="admin-hospital-feedback" role="status">
-        Loading hospital directory…
+        Loading hospital information…
       </p>
       <div v-else-if="directoryError" class="admin-hospital-error" role="alert">
-        <strong>Hospital directory unavailable</strong>
+        <strong>Hospital information unavailable</strong>
         <p>{{ directoryError }}</p>
         <button type="button" @click="loadHospitals">Retry</button>
       </div>
       <div v-else-if="directoryLoaded && !filteredHospitals.length">
         <StateEmpty
-          :title="
-            hospitals.length
-              ? 'No hospitals match your search'
-              : 'No hospital records available'
-          "
-          :description="
-            hospitals.length
-              ? 'Try another search term.'
-              : 'The connected service returned no hospital records.'
-          "
+          :title="hospitals.length ? 'No hospitals match your search' : 'No hospital records available'"
+          :description="hospitals.length ? 'Try another search term.' : 'The service returned no hospital records.'"
         />
       </div>
-      <div v-else class="admin-hospital-pending" role="status">
-        <ClipboardList :size="21" aria-hidden="true" />
-        <p>
-          Hospital records will appear here when the authorized directory
-          service is configured. No hospital records are currently available.
-        </p>
+      <div v-if="!isLoading && !directoryError && filteredHospitals.length" class="admin-hospital-list-wrap">
+        <ul class="admin-hospital-list" aria-label="Hospitals">
+          <li v-for="hospital in filteredHospitals" :key="hospital.id">
+            <div>
+              <strong>{{ hospital.name }}</strong>
+              <small>Hospital ID: {{ hospital.id }}</small>
+              <small>{{ locationSummary(hospital) }}</small>
+              <small v-if="hospital.registrationIdentifier">
+                Registration: {{ hospital.registrationIdentifier }}
+              </small>
+            </div>
+            <span class="admin-hospital-status" :class="`is-${hospital.status}`">
+              {{ hospital.status }}
+            </span>
+          </li>
+        </ul>
       </div>
-
-      <ul
-        v-if="!isLoading && !directoryError && filteredHospitals.length"
-        class="admin-hospital-list"
-        aria-label="Hospitals"
-      >
-        <li v-for="hospital in filteredHospitals" :key="hospital.id">
-          <div>
-            <strong>{{ hospital.name }}</strong>
-            <small>Hospital ID: {{ hospital.id }}</small>
-            <small>{{ locationSummary(hospital.location) }}</small>
-            <small v-if="hospital.registrationIdentifier">
-              Registration identifier: {{ hospital.registrationIdentifier }}
-            </small>
-          </div>
-          <span class="admin-hospital-status" :class="`is-${hospital.status}`">
-            {{ hospital.status }}
-          </span>
-        </li>
-      </ul>
+      <div v-if="!isSystemAdmin && !directoryError" class="admin-hospital-feedback">
+        Hospital registration is restricted to system administrators.
+      </div>
     </section>
 
-    <section
-      class="admin-hospital-panel"
-      aria-labelledby="hospital-registration-title"
-    >
+    <section v-if="isSystemAdmin" class="admin-hospital-panel" aria-labelledby="hospital-registration-title">
       <div class="admin-section-heading">
         <div class="admin-section-title">
-          <span class="admin-section-icon" aria-hidden="true">
-            <ClipboardList :size="19" />
-          </span>
+          <span class="admin-section-icon" aria-hidden="true"><ClipboardList :size="19" /></span>
           <div>
             <span class="admin-eyebrow">REGISTRATION</span>
-            <h2 id="hospital-registration-title">Prepare hospital details</h2>
+            <h2 id="hospital-registration-title">Register a hospital</h2>
           </div>
         </div>
       </div>
-      <p class="admin-hospital-form-intro">
-        Validate details locally. This form does not register a hospital or
-        verify its identity.
-      </p>
-
-      <form
-        class="admin-hospital-form"
-        novalidate
-        @submit.prevent="submitRegistration"
-      >
+      <form class="admin-hospital-form" novalidate @submit.prevent="submitRegistration">
         <div class="admin-hospital-field">
-          <label for="hospital-name"
-            >Hospital name <span aria-hidden="true">*</span></label
-          >
+          <label for="hospital-name">Hospital name <span aria-hidden="true">*</span></label>
           <input
             id="hospital-name"
             v-model="form.name"
@@ -271,94 +244,62 @@ onMounted(() => {
             autocomplete="organization"
             required
             :aria-invalid="validation.name.$error"
-            :aria-describedby="
-              validation.name.$error ? 'hospital-name-error' : undefined
-            "
+            :aria-describedby="validation.name.$error ? 'hospital-name-error' : undefined"
             @blur="validation.name.$touch()"
           />
-          <p
-            v-if="validation.name.$error"
-            id="hospital-name-error"
-            class="admin-hospital-field-error"
-            role="alert"
-          >
+          <p v-if="validation.name.$error" id="hospital-name-error" class="admin-hospital-field-error" role="alert">
             {{ validation.name.$errors[0]?.$message }}
           </p>
         </div>
-
         <div class="admin-hospital-field">
-          <label for="hospital-registration-identifier">
-            Registration identifier <span>(optional)</span>
-          </label>
-          <input
-            id="hospital-registration-identifier"
-            v-model="form.registrationIdentifier"
-            name="registrationIdentifier"
-            autocomplete="off"
-          />
+          <label for="hospital-registration-number">Registration number</label>
+          <input id="hospital-registration-number" v-model="form.registrationNumber" maxlength="50" />
         </div>
-
-        <fieldset class="admin-hospital-location">
-          <legend>Location <span>(optional)</span></legend>
+        <div class="admin-hospital-location-grid">
+          <div class="admin-hospital-field">
+            <label for="hospital-type">Hospital type</label>
+            <select id="hospital-type" v-model="form.hospitalType">
+              <option value="PUBLIC">Public</option>
+              <option value="PRIVATE">Private</option>
+              <option value="FAITH_BASED">Faith based</option>
+            </select>
+          </div>
+          <div class="admin-hospital-field">
+            <label for="hospital-status">Status</label>
+            <select id="hospital-status" v-model="form.status">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+          <div class="admin-hospital-field">
+            <label for="hospital-phone">Phone</label>
+            <input id="hospital-phone" v-model="form.phone" type="tel" />
+          </div>
+          <div class="admin-hospital-field">
+            <label for="hospital-email">Email</label>
+            <input id="hospital-email" v-model="form.email" type="email" />
+          </div>
           <div class="admin-hospital-field">
             <label for="hospital-address">Address</label>
-            <input
-              id="hospital-address"
-              v-model="form.address"
-              name="address"
-              autocomplete="street-address"
-            />
+            <input id="hospital-address" v-model="form.address" />
           </div>
-          <div class="admin-hospital-location-grid">
-            <div class="admin-hospital-field">
-              <label for="hospital-city">City</label>
-              <input
-                id="hospital-city"
-                v-model="form.city"
-                name="city"
-                autocomplete="address-level2"
-              />
-            </div>
-            <div class="admin-hospital-field">
-              <label for="hospital-region">Region</label>
-              <input
-                id="hospital-region"
-                v-model="form.region"
-                name="region"
-                autocomplete="address-level1"
-              />
-            </div>
-            <div class="admin-hospital-field">
-              <label for="hospital-country">Country</label>
-              <input
-                id="hospital-country"
-                v-model="form.country"
-                name="country"
-                autocomplete="country-name"
-              />
-            </div>
+          <div class="admin-hospital-field">
+            <label for="hospital-town">Town</label>
+            <input id="hospital-town" v-model="form.town" />
           </div>
-        </fieldset>
-
-        <p
-          v-if="registrationMessage"
-          class="admin-hospital-registration-message"
-          role="status"
-          aria-live="polite"
-        >
+          <div class="admin-hospital-field">
+            <label for="hospital-county">County</label>
+            <input id="hospital-county" v-model="form.county" />
+          </div>
+        </div>
+        <p v-if="registrationMessage" class="admin-hospital-registration-message" role="status">
           {{ registrationMessage }}
         </p>
-
-        <button
-          class="admin-hospital-submit"
-          type="submit"
-          :disabled="isSubmitting"
-        >
-          {{ isSubmitting ? "Checking details…" : "Validate details" }}
+        <button class="admin-hospital-submit" type="submit" :disabled="isSubmitting">
+          {{ isSubmitting ? "Registering…" : "Register hospital" }}
         </button>
         <p class="admin-hospital-form-note">
-          Backend registration is not connected. No registration request will be
-          saved or reported as successful.
+          Registration is sent to the authorized MediQueue administration service.
         </p>
       </form>
     </section>

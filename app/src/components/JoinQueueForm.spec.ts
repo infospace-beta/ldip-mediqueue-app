@@ -1,33 +1,127 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import { createPinia, setActivePinia, type Pinia } from "pinia";
+import {
+  createMemoryHistory,
+  createRouter,
+  type Router,
+} from "vue-router";
+import type * as PatientData from "../data/patient";
 import JoinQueueForm from "@/components/JoinQueueForm.vue";
+import { useAuthStore } from "@/stores/auth.store";
+import { mediqueueService } from "@/services/mediqueue.service";
+
+vi.mock("@/services/mediqueue.service", () => ({
+  mediqueueService: {
+    getHospitals: vi.fn(),
+    getDepartments: vi.fn(),
+    joinQueue: vi.fn(),
+  },
+}));
+
+vi.mock("../data/patient", async (importOriginal) => {
+  const actual = await importOriginal<typeof PatientData>();
+  return {
+    ...actual,
+    setPatientQueue: vi.fn(),
+  };
+});
+
+const createTestRouter = () =>
+  createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      {
+        path: "/patient/queue",
+        component: { template: "<div>Queue status</div>" },
+      },
+    ],
+  });
 
 describe("JoinQueueForm", () => {
-  it("validates details without claiming to submit or reserve a queue place", async () => {
-    const wrapper = mount(JoinQueueForm);
+  let router: Router = createTestRouter();
+  let pinia: Pinia = createPinia();
 
-    await wrapper.get("form").trigger("submit");
-    expect(wrapper.get('[role="alert"]').text()).toContain(
-      "Enter a hospital and select a department, service, and visit type.",
-    );
-    expect(wrapper.find('[role="status"]').exists()).toBe(false);
+  beforeEach(async () => {
+    vi.clearAllMocks();
 
-    await wrapper.get("#hospital-search").setValue("Example clinic");
-    const selects = wrapper.findAll("select");
-    await selects[0]?.setValue("General practice");
+    pinia = createPinia();
+    setActivePinia(pinia);
+    router = createTestRouter();
+
+    vi.mocked(mediqueueService.getHospitals).mockResolvedValue([
+      { id: 1, name: "Example Hospital", town: "Nakuru" },
+    ]);
+
+    vi.mocked(mediqueueService.getDepartments).mockResolvedValue([
+      { id: 10, hospitalId: 1, name: "General Practice", code: "GP" },
+    ]);
+
+    vi.mocked(mediqueueService.joinQueue).mockResolvedValue({
+      id: 42,
+      patientId: 7,
+      departmentId: 10,
+      departmentName: "General Practice",
+      status: "WAITING",
+      joinedAt: "2026-11-15T10:00:00",
+      position: 1,
+    });
+  });
+
+  async function mountForm() {
+    const wrapper = mount(JoinQueueForm, {
+      global: {
+        plugins: [pinia, router],
+      },
+    });
+
     await flushPromises();
-    await selects[1]?.setValue("Consultation");
-    await selects[2]?.setValue("Walk-in");
+    return wrapper;
+  }
+
+  it("shows validation when no department is selected", async () => {
+    const wrapper = await mountForm();
+
     await wrapper.get("form").trigger("submit");
 
-    expect(wrapper.get('[role="status"]').text()).toContain(
-      "No queue request was sent or saved",
+    expect(wrapper.get('[role="alert"]').text()).toContain(
+      "Select a hospital and department to join its queue.",
     );
+    expect(mediqueueService.joinQueue).not.toHaveBeenCalled();
+  });
+
+  it("loads departments and submits a queue request", async () => {
+    const wrapper = await mountForm();
+
+    const auth = useAuthStore();
+    auth.user = {
+      id: 7,
+      username: "patient@example.test",
+      firstName: "Test",
+      lastName: "Patient",
+      role: "patient",
+    };
+
+    const selects = wrapper.findAll("select");
+    const hospitalSelect = selects[0];
+    const departmentSelect = selects[1];
+
+    if (!hospitalSelect || !departmentSelect) {
+      throw new Error("Expected hospital and department dropdowns.");
+    }
+
+    await hospitalSelect.setValue("1");
+    await flushPromises();
+
+    expect(mediqueueService.getDepartments).toHaveBeenCalledWith(1);
+
+    await departmentSelect.setValue("10");
+    await wrapper.get("form").trigger("submit");
+    await flushPromises();
+
+    expect(mediqueueService.joinQueue).toHaveBeenCalledWith(10);
     expect(wrapper.get('[role="status"]').text()).toContain(
-      "no place in line was reserved",
-    );
-    expect(wrapper.get('button[type="submit"]').text()).toContain(
-      "Check details",
+      "Queue ticket #42 was created successfully.",
     );
   });
 });

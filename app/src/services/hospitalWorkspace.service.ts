@@ -1,20 +1,27 @@
+import { dashboardService } from "@/services/dashboard.service";
+import { hospitalManagementService } from "@/services/hospitalManagement.service";
 import type { StaffHospitalAssignment, User } from "@/types/models";
 
-export class HospitalWorkspaceServiceUnavailableError extends Error {
-  constructor() {
-    super("Hospital assignment service is not connected.");
-    this.name = "HospitalWorkspaceServiceUnavailableError";
-  }
-}
-
 export const hospitalWorkspaceService = {
-  /**
-   * Replace this boundary when the backend publishes its assignment contract.
-   * Backend requests must independently verify staff membership and permissions.
-   */
   async getAssignmentsForStaff(
-    _staffUserId: User["id"],
+    staffUserId: User["id"],
   ): Promise<StaffHospitalAssignment[]> {
-    throw new HospitalWorkspaceServiceUnavailableError();
+    const dashboard = await dashboardService.getStaffSummary();
+    if (dashboard.hospitalId === null) return [];
+
+    const hospitalId = String(dashboard.hospitalId);
+    const hospital = await hospitalManagementService.getHospital(
+      dashboard.hospitalId,
+    );
+    return [
+      {
+        id: `${staffUserId}:${hospitalId}`,
+        staffUserId,
+        hospitalId,
+        hospital,
+        assignedRole: "STAFF",
+        status: hospital.status === "active" ? "active" : "suspended",
+      },
+    ];
   },
 };

@@ -1,6 +1,9 @@
 <script setup>
+import { ref } from "vue";
 import { RefreshCw } from "@lucide/vue";
 import QueueCard from "../components/QueueCard.vue";
+
+const queueCard = ref(null);
 </script>
 
 <template>
@@ -9,22 +12,18 @@ import QueueCard from "../components/QueueCard.vue";
       <div>
         <span class="eyebrow">QUEUE DETAILS</span>
         <h1>My queue</h1>
-        <p>
-          Live status and refresh are unavailable until a hospital service is
-          connected.
-        </p>
+        <p>View and update your ticket using the live hospital queue service.</p>
       </div>
       <button
         class="button button-secondary"
         type="button"
-        disabled
-        title="Live queue updates are unavailable in this prototype"
+        @click="queueCard?.refreshStatus()"
       >
         <RefreshCw :size="16" aria-hidden="true" />
         Refresh status
       </button>
     </div>
 
-    <QueueCard />
+    <QueueCard ref="queueCard" />
   </div>
 </template>

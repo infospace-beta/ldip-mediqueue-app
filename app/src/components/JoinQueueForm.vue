@@ -1,44 +1,98 @@
-﻿<script setup>
-import { computed, ref } from "vue";
+<script setup>
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import {
   ArrowRight,
-  Check,
   ChevronDown,
   Clock3,
   MapPin,
-  Search,
   ShieldPlus,
 } from "@lucide/vue";
+import { setPatientQueue } from "../data/patient";
+import { useAuthStore } from "@/stores/auth.store";
+import { mediqueueService } from "@/services/mediqueue.service";
 
-const hospital = ref("");
-const department = ref("");
-const service = ref("");
-const visitType = ref("");
-const queueType = ref("Normal");
-const submitted = ref(false);
+const router = useRouter();
+const auth = useAuthStore();
+const hospitals = ref([]);
+const departments = ref([]);
+const selectedHospitalId = ref(null);
+const selectedDepartmentId = ref(null);
+const isLoadingHospitals = ref(false);
+const isLoadingDepartments = ref(false);
+const isSubmitting = ref(false);
+const loadError = ref("");
 const formError = ref("");
-const services = computed(() => {
-  if (!department.value) return [];
-  return department.value === "Emergency"
-    ? ["Emergency assessment", "Urgent care"]
-    : ["Consultation", "Follow-up", "Screening"];
-});
+const submittedTicket = ref(null);
 
-function submitQueue() {
-  if (
-    !hospital.value.trim() ||
-    !department.value ||
-    !service.value ||
-    !visitType.value
-  ) {
-    formError.value =
-      "Enter a hospital and select a department, service, and visit type.";
+const selectedHospital = computed(() =>
+  hospitals.value.find((item) => item.id === selectedHospitalId.value),
+);
+
+async function loadHospitals() {
+  isLoadingHospitals.value = true;
+  loadError.value = "";
+  try {
+    hospitals.value = await mediqueueService.getHospitals();
+  } catch (error) {
+    loadError.value =
+      error instanceof Error ? error.message : "Unable to load hospitals.";
+  } finally {
+    isLoadingHospitals.value = false;
+  }
+}
+
+async function selectHospital() {
+  selectedDepartmentId.value = null;
+  departments.value = [];
+  formError.value = "";
+  if (!selectedHospitalId.value) return;
+
+  isLoadingDepartments.value = true;
+  try {
+    departments.value = await mediqueueService.getDepartments(
+      selectedHospitalId.value,
+    );
+  } catch (error) {
+    loadError.value =
+      error instanceof Error ? error.message : "Unable to load departments.";
+  } finally {
+    isLoadingDepartments.value = false;
+  }
+}
+
+async function submitQueue() {
+  formError.value = "";
+  submittedTicket.value = null;
+  if (!selectedDepartmentId.value) {
+    formError.value = "Select a hospital and department to join its queue.";
+    return;
+  }
+  if (!auth.user?.id) {
+    formError.value = "Your patient account could not be identified.";
     return;
   }
 
-  formError.value = "";
-  submitted.value = true;
+  isSubmitting.value = true;
+  try {
+    const ticket = await mediqueueService.joinQueue(
+      selectedDepartmentId.value,
+    );
+    setPatientQueue(
+      ticket,
+      selectedHospital.value?.name ?? "",
+      selectedHospitalId.value,
+    );
+    submittedTicket.value = ticket;
+  } catch (error) {
+    formError.value =
+      error instanceof Error ? error.message : "Unable to join this queue.";
+  } finally {
+    isSubmitting.value = false;
+  }
 }
+
+onMounted(() => void loadHospitals());
 </script>
 
 <template>
@@ -46,154 +100,103 @@ function submitQueue() {
     <section class="panel join-form-panel">
       <div class="panel-header">
         <div>
-          <span class="eyebrow">PREPARE REQUEST</span>
-          <h2>Queue request details</h2>
+          <span class="eyebrow">JOIN A QUEUE</span>
+          <h2>Choose a hospital department</h2>
           <p class="panel-subtitle">
-            Check the visit details locally. This form cannot submit a request
-            or reserve a place in line.
+            Your account will be added to the selected department's queue.
           </p>
         </div>
         <span class="step-count">01 <span>/ 01</span></span>
       </div>
-      <form
-        class="join-form"
-        @submit.prevent="submitQueue"
-        @input="submitted = false"
-        @change="submitted = false"
-      >
-        <p class="form-helper">
-          Department, service, and visit-type choices are examples for this
-          prototype. They do not describe a connected hospital catalogue.
+      <form class="join-form" @submit.prevent="submitQueue">
+        <p v-if="loadError" class="form-message form-error" role="alert">
+          {{ loadError }}
+          <button type="button" class="text-link" @click="loadHospitals">
+            Retry
+          </button>
         </p>
-        <div class="field-group">
-          <label class="field-label" for="hospital-search">Hospital</label>
-          <div class="hospital-search-wrap">
-            <Search :size="18" aria-hidden="true" /><input
-              id="hospital-search"
-              v-model="hospital"
-              placeholder="Enter hospital name"
-              autocomplete="off"
-              aria-describedby="hospital-help"
-            /><MapPin :size="17" class="search-locate" aria-hidden="true" />
-          </div>
-          <p id="hospital-help" class="form-helper">
-            No hospital directory is connected. Enter a name to prepare a
-            prototype request.
-          </p>
-        </div>
-        <div class="field-grid">
-          <label
-            ><span class="field-label">Department</span
-            ><span class="select-wrap"
-              ><select v-model="department" @change="service = ''">
-                <option value="">Select department</option>
-                <option>Emergency</option>
-                <option>General practice</option>
-                <option>Cardiology</option>
-                <option>Pediatrics</option>
-                <option>Women's health</option></select
-              ><ChevronDown :size="16" /></span
-          ></label>
-          <label
-            ><span class="field-label">Service</span
-            ><span class="select-wrap"
-              ><select v-model="service" :disabled="!department">
-                <option value="">Select service</option>
-                <option
-                  v-for="option in services"
-                  :key="option"
-                  :value="option"
-                >
-                  {{ option }}
-                </option></select
-              ><ChevronDown :size="16" /></span
-          ></label>
-          <label
-            ><span class="field-label">Visit type</span
-            ><span class="select-wrap"
-              ><select v-model="visitType">
-                <option value="">Select visit type</option>
-                <option>Walk-in</option>
-                <option>Follow-up</option>
-                <option>Referral</option></select
-              ><ChevronDown :size="16" /></span
-          ></label>
-        </div>
-        <fieldset class="urgency-field">
-          <legend class="field-label">Queue type</legend>
-          <div class="urgency-options">
-            <button
-              type="button"
-              class="urgency-option"
-              :class="{ selected: queueType === 'Normal' }"
-              :aria-pressed="queueType === 'Normal'"
-              @click="queueType = 'Normal'"
+        <label class="field-group">
+          <span class="field-label">Hospital</span>
+          <span class="select-wrap">
+            <select
+              v-model.number="selectedHospitalId"
+              :disabled="isLoadingHospitals || hospitals.length === 0"
+              @change="selectHospital"
             >
-              <span class="urgency-symbol"><Check :size="15" /></span
-              ><span
-                ><strong>Normal</strong><small>Standard queue</small></span
-              ></button
-            ><button
-              type="button"
-              class="urgency-option urgency-emergency"
-              :class="{ selected: queueType === 'Emergency' }"
-              :aria-pressed="queueType === 'Emergency'"
-              @click="queueType = 'Emergency'"
+              <option :value="null">
+                {{ isLoadingHospitals ? "Loading hospitals…" : "Select hospital" }}
+              </option>
+              <option v-for="hospital in hospitals" :key="hospital.id" :value="hospital.id">
+                {{ hospital.name }}
+                <template v-if="hospital.town"> — {{ hospital.town }}</template>
+              </option>
+            </select>
+            <ChevronDown :size="16" aria-hidden="true" />
+          </span>
+        </label>
+        <label class="field-group">
+          <span class="field-label">Department</span>
+          <span class="select-wrap">
+            <select
+              v-model.number="selectedDepartmentId"
+              :disabled="!selectedHospitalId || isLoadingDepartments || departments.length === 0"
             >
-              <span class="urgency-symbol"><ShieldPlus :size="15" /></span
-              ><span
-                ><strong>Emergency</strong><small>Urgent attention</small></span
-              >
-            </button>
-          </div>
-        </fieldset>
+              <option :value="null">
+                {{
+                  isLoadingDepartments
+                    ? "Loading departments…"
+                    : selectedHospitalId
+                      ? "Select department"
+                      : "Select a hospital first"
+                }}
+              </option>
+              <option v-for="department in departments" :key="department.id" :value="department.id">
+                {{ department.name }}
+              </option>
+            </select>
+            <ChevronDown :size="16" aria-hidden="true" />
+          </span>
+        </label>
+        <p v-if="selectedHospitalId && !isLoadingDepartments && !departments.length" class="form-helper">
+          No active departments were returned for this hospital.
+        </p>
         <p v-if="formError" class="form-message form-error" role="alert">
           {{ formError }}
         </p>
-        <output
-          v-if="submitted"
-          class="form-message service-notice"
-          role="status"
-          >Details checked in this browser session only. No queue request was
-          sent or saved, and no place in line was reserved.</output
-        >
-        <button class="button button-primary button-join" type="submit">
-          <span>Check details</span
-          ><ArrowRight class="button-arrow" :size="18" aria-hidden="true" />
+        <output v-if="submittedTicket" class="form-message service-notice" role="status">
+          Queue ticket #{{ submittedTicket.id }} was created successfully.
+        </output>
+        <button class="button button-primary button-join" type="submit" :disabled="isSubmitting || !departments.length">
+          <span>{{ isSubmitting ? "Joining queue…" : "Join queue" }}</span>
+          <ArrowRight class="button-arrow" :size="18" aria-hidden="true" />
+        </button>
+        <button v-if="submittedTicket" class="button button-secondary" type="button" @click="router.push('/patient/queue')">
+          View queue status
         </button>
         <p class="form-note">
           <ShieldPlus :size="17" aria-hidden="true" />
-          <span
-            >If this is a life-threatening emergency, contact local emergency
-            services. Selecting an emergency queue here does not contact
-            emergency services.</span
-          >
+          <span>
+            This adds a routine queue ticket only. If you have an emergency,
+            contact local emergency services directly.
+          </span>
         </p>
       </form>
     </section>
     <aside class="join-side-column">
       <section class="panel care-info-panel">
-        <span class="care-info-icon"
-          ><Clock3 :size="20" aria-hidden="true"
-        /></span>
-        <span class="eyebrow">QUEUE OVERVIEW</span>
+        <span class="care-info-icon"><Clock3 :size="20" aria-hidden="true" /></span>
+        <span class="eyebrow">LIVE QUEUE</span>
         <h3>Queue details</h3>
-        <p>
-          Queue number and wait information will appear here when a hospital
-          service is connected.
-        </p>
+        <p>Ticket position and estimated wait are supplied by the hospital queue service.</p>
         <div class="info-rule"></div>
         <div class="availability-note">
-          <span class="availability-indicator"></span
-          ><span>Live queue data is unavailable in this prototype.</span>
+          <span class="availability-indicator"></span>
+          <span>{{ submittedTicket ? "Your ticket is active." : "Choose a department to join its queue." }}</span>
         </div>
       </section>
       <section class="panel nearby-tip">
         <MapPin :size="18" aria-hidden="true" />
-        <span
-          >Hospital selection is not connected to a live directory. Entered
-          details are only used to prepare this prototype request.</span
-        >
+        <span>Only active hospitals and departments provided by MediQueue are selectable.</span>
       </section>
     </aside>
   </div>

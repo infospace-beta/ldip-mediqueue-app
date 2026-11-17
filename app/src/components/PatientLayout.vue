@@ -27,7 +27,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
         :menu-open="mobileMenuOpen"
         @toggle-menu="mobileMenuOpen = !mobileMenuOpen"
       />
-      <main class="page-content" id="main-content">
+      <main id="main-content" class="page-content">
         <RouterView v-slot="{ Component, route: activeRoute }">
           <Transition name="page-fade" mode="out-in"
             ><component :is="Component" :key="activeRoute.path"

@@ -10,15 +10,18 @@ export interface DoctorAppointment {
   time: string;
   visitType: string;
   status: AppointmentStatus;
+  queueTicketId?: number;
+  departmentId?: number;
 }
 
 export interface DoctorPatient {
   id: string;
   name: string;
-  age: number;
+  age?: number;
   lastVisit: string;
   visitType: string;
   status: PatientStatus;
+  queueTicketId?: number;
 }
 
 export const appointmentStatuses = [
@@ -48,6 +51,7 @@ export function filterAppointments(
         appointment.time,
         appointment.visitType,
         appointment.status,
+        String(appointment.queueTicketId ?? ""),
       ].some((value) => value.toLowerCase().includes(search));
     return matchesStatus && matchesSearch;
   });
@@ -69,6 +73,7 @@ export function filterPatients(
         patient.visitType,
         patient.status,
         String(patient.age),
+        String(patient.queueTicketId ?? ""),
       ].some((value) => value.toLowerCase().includes(search));
     return matchesStatus && matchesSearch;
   });

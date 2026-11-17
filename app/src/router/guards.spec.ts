@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+﻿import { describe, it, expect, beforeEach } from "vitest";
 import type { RouteLocationNormalized } from "vue-router";
 import { createPinia, setActivePinia } from "pinia";
 import { authGuard } from "@/router/guards";
@@ -28,6 +28,7 @@ const signIn = (role: "patient" | "responder" = "patient") => {
     lastName: "User",
     role,
   };
+  useAuthStore().token = "test-access-token";
 };
 
 describe("authGuard", () => {

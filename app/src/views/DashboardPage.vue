@@ -1,9 +1,10 @@
-﻿<script setup>
+<script setup>
+import { onMounted, ref } from "vue";
 import {
   ArrowRight,
   Bell,
   CalendarDays,
-  Clock3,
+
   MapPin,
   TicketCheck,
 } from "@lucide/vue";
@@ -13,8 +14,114 @@ import {
   patient,
   queue,
   unreadCount,
+  clearPatientQueue,
+  setPatientQueue,
 } from "../data/patient";
+import { useAuthStore } from "@/stores/auth.store";
+import { mediqueueService } from "@/services/mediqueue.service";
 import patientCareImage from "../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.jpg";
+
+const auth = useAuthStore();
+const isLoading = ref(true);
+const dashboardError = ref("");
+
+function formatDate(value) {
+  return value ? new Date(value).toLocaleDateString() : "Date unavailable";
+}
+
+function formatTime(value) {
+  return value ? new Date(value).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  }) : "";
+}
+
+async function loadDashboard() {
+  const patientId = auth.user?.id;
+  if (!patientId) {
+    dashboardError.value = "Your patient account could not be identified.";
+    isLoading.value = false;
+    return;
+  }
+
+  try {
+    const profile = await mediqueueService.getPatient(patientId);
+    Object.assign(patient, {
+      id: String(profile.id),
+      username: profile.username,
+      name: profile.fullName,
+      email: profile.email,
+    });
+
+    const [appointmentResult, notificationResult, visitResult] =
+      await Promise.allSettled([
+        mediqueueService.getPatientAppointments(patientId),
+        mediqueueService.getNotifications(),
+        mediqueueService.getPatientVisits(patientId),
+      ]);
+    const failedSections = [];
+
+    if (appointmentResult.status === "fulfilled") {
+      appointments.splice(
+        0,
+        appointments.length,
+        ...appointmentResult.value.map((item) => ({
+          id: item.id,
+          doctor: item.doctorName,
+          specialty: item.departmentName,
+          date: formatDate(item.startsAt),
+          time: formatTime(item.startsAt),
+          hospital: item.hospitalName,
+          status: item.status,
+          startsAt: item.startsAt,
+          reason: item.reason,
+        })),
+      );
+    } else {
+      failedSections.push("appointments");
+    }
+
+    if (notificationResult.status === "fulfilled") {
+      notifications.splice(
+        0,
+        notifications.length,
+        ...notificationResult.value.map((item) => ({
+          id: item.id,
+          title: item.title,
+          message: item.message,
+          time: formatDate(item.createdAt),
+          kind: item.kind,
+          unread: item.unread,
+        })),
+      );
+    } else {
+      failedSections.push("notifications");
+    }
+
+    if (visitResult.status === "fulfilled") {
+      const activeTicket = visitResult.value.find(
+        (ticket) => ticket.status === "WAITING" || ticket.status === "CALLED",
+      );
+      if (activeTicket) setPatientQueue(activeTicket);
+      else clearPatientQueue();
+    } else {
+      failedSections.push("queue status");
+    }
+
+    dashboardError.value = failedSections.length
+      ? `Some live data could not be loaded: ${failedSections.join(", ")}.`
+      : "";
+  } catch (error) {
+    dashboardError.value =
+      error instanceof Error ? error.message : "Unable to load your dashboard.";
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  void loadDashboard();
+});
 </script>
 
 <template>
@@ -28,9 +135,7 @@ import patientCareImage from "../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.j
           }}
         </h1>
         <p>
-          Prepare a queue request and review visit or appointment information
-          held in this browser session. Live hospital services are not
-          connected.
+          Review your live queue, appointments, and care updates.
         </p>
       </div>
       <img
@@ -42,6 +147,12 @@ import patientCareImage from "../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.j
         decoding="async"
       />
     </section>
+    <p v-if="isLoading" class="dashboard-load-state" role="status">
+      Loading your live care information…
+    </p>
+    <p v-if="dashboardError" class="form-message form-error" role="alert">
+      {{ dashboardError }}
+    </p>
 
     <div class="dashboard-main-grid">
       <div class="dashboard-primary-column">
@@ -113,8 +224,8 @@ import patientCareImage from "../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.j
               "
               class="supporting-copy"
             >
-              Queue information is recorded in this session. Live hospital
-              status is not connected.
+              Your queue ticket is active. The service has not provided a
+              position or estimated wait.
             </p>
             <RouterLink class="button button-secondary" to="/patient/queue">
               View queue <ArrowRight :size="16" aria-hidden="true" />
@@ -125,9 +236,7 @@ import patientCareImage from "../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.j
             <div>
               <strong>No active queue</strong>
               <p>
-                No queue request is active in this browser session. You can
-                prepare visit details, but a connected hospital service is
-                required to submit them.
+                No active queue ticket was found for your account.
               </p>
             </div>
             <RouterLink class="button button-primary" to="/patient/join-queue">
@@ -178,7 +287,7 @@ import patientCareImage from "../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.j
             </li>
           </ul>
           <p v-else class="supporting-copy">
-            No appointment information is available in this session.
+            {{ isLoading ? "Loading appointments…" : "No appointments found." }}
           </p>
         </section>
       </div>
@@ -207,7 +316,7 @@ import patientCareImage from "../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.j
             {{ notifications.length === 1 ? "update" : "updates" }}.
           </p>
           <p v-else class="supporting-copy">
-            No notification information is available in this session.
+            {{ isLoading ? "Loading notifications…" : "No notifications found." }}
           </p>
           <RouterLink class="text-link" to="/patient/notifications">
             View notifications <ArrowRight :size="15" aria-hidden="true" />

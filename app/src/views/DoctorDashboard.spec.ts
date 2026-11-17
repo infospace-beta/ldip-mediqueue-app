@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+﻿import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { flushPromises, mount, type VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import { createPinia, setActivePinia } from "pinia";
@@ -41,6 +41,7 @@ describe("DoctorDashboard", () => {
       lastName: "Doctor",
       role,
     };
+    useAuthStore().token = "test-access-token";
   }
 
   function createDestination(path: string): RouteLocationNormalized {
@@ -83,9 +84,9 @@ describe("DoctorDashboard", () => {
       "/mediqueue-logo.png",
     );
     expect(dashboard.get("h1").text()).toBe("Doctor overview");
-    expect(dashboard.text()).toContain("Backend integration pending.");
+    expect(dashboard.text()).toContain("Live hospital services connected.");
     expect(dashboard.text()).toContain(
-      "Consultation queue data is unavailable until the clinical service is connected.",
+      "No active tickets were returned for your departments.",
     );
     expect(dashboard.text()).toContain(
       "Appointment data is unavailable until the clinical service is connected.",
@@ -106,7 +107,7 @@ describe("DoctorDashboard", () => {
       ?.trigger("click");
 
     expect(dashboard.text()).toContain(
-      "Appointment data is unavailable until the clinical service is connected.",
+      "No doctor appointment-list endpoint is available. Active queue tickets are shown on the overview.",
     );
     expect(
       dashboard.get(
@@ -124,7 +125,7 @@ describe("DoctorDashboard", () => {
       ?.trigger("click");
 
     expect(dashboard.text()).toContain(
-      "Patient records are unavailable until the clinical service is connected.",
+      "Patient identifiers below are derived from active queue tickets; demographic details are not returned by the queue API.",
     );
     expect(
       dashboard.get(
@@ -277,7 +278,7 @@ describe("DoctorDashboard", () => {
       .get('button[aria-label="Open notifications"]')
       .trigger("click");
     expect(dashboard.text()).toContain(
-      "Notification data is unavailable until a notification service is connected.",
+      "No notifications were returned.",
     );
 
     await dashboard

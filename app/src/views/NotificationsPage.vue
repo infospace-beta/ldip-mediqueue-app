@@ -1,5 +1,5 @@
-﻿<script setup>
-import { computed, ref } from "vue";
+<script setup>
+import { computed, onMounted, ref } from "vue";
 import {
   Bell,
   CalendarDays,
@@ -9,21 +9,66 @@ import {
   ShieldPlus,
 } from "@lucide/vue";
 import { notifications, unreadCount } from "../data/patient";
+import { mediqueueService } from "@/services/mediqueue.service";
 
 const filter = ref("All");
 const filters = ["All", "Unread", "Queue", "Appointments"];
+const isLoading = ref(true);
+const errorMessage = ref("");
 const visibleNotifications = computed(() =>
   notifications.filter((item) => {
     if (filter.value === "Unread") return item.unread;
-    if (filter.value === "Queue") return item.kind === "queue";
-    if (filter.value === "Appointments") return item.kind === "appointment";
+    if (filter.value === "Queue") return item.kind.toLowerCase().includes("queue");
+    if (filter.value === "Appointments") return item.kind.toLowerCase().includes("appointment");
     return true;
   }),
 );
-function markAllRead() {
-  notifications.forEach((item) => {
+async function loadNotifications() {
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    const records = await mediqueueService.getNotifications();
+    notifications.splice(
+      0,
+      notifications.length,
+      ...records.map((item) => ({
+        id: item.id,
+        title: item.title,
+        message: item.message,
+        time: new Date(item.createdAt).toLocaleString(),
+        kind: item.kind,
+        unread: item.unread,
+      })),
+    );
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error ? error.message : "Unable to load notifications.";
+  } finally {
+    isLoading.value = false;
+  }
+}
+async function markAllRead() {
+  errorMessage.value = "";
+  try {
+    await mediqueueService.markAllNotificationsRead();
+    notifications.forEach((item) => {
+      item.unread = false;
+    });
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error ? error.message : "Unable to update notifications.";
+  }
+}
+async function markRead(item) {
+  if (!item.unread) return;
+  errorMessage.value = "";
+  try {
+    await mediqueueService.markNotificationRead(Number(item.id));
     item.unread = false;
-  });
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error ? error.message : "Unable to update notification.";
+  }
 }
 function iconFor(kind) {
   return (
@@ -35,6 +80,7 @@ function iconFor(kind) {
     }[kind] || Bell
   );
 }
+onMounted(() => void loadNotifications());
 </script>
 
 <template>
@@ -44,8 +90,7 @@ function iconFor(kind) {
         <span class="eyebrow">CARE UPDATES</span>
         <h1>Notifications</h1>
         <p>
-          Queue and appointment updates will appear here when notification
-          services are connected.
+          Read updates from your MediQueue care activity.
         </p>
       </div>
       <button
@@ -57,7 +102,16 @@ function iconFor(kind) {
         <CheckCheck :size="16" aria-hidden="true" /> Mark all as read
       </button>
     </div>
-    <div class="notification-toolbar">
+    <p v-if="errorMessage" class="form-message form-error" role="alert">
+      {{ errorMessage }}
+      <button class="text-link" type="button" @click="loadNotifications">
+        Retry
+      </button>
+    </p>
+    <p v-if="isLoading" class="supporting-copy" role="status">
+      Loading notifications…
+    </p>
+    <div v-else class="notification-toolbar">
       <div class="filter-tabs" role="tablist" aria-label="Filter notifications">
         <button
           v-for="item in filters"
@@ -105,6 +159,14 @@ function iconFor(kind) {
         ><span v-else class="read-check" aria-label="Read"
           ><CheckCheck :size="17" aria-hidden="true"
         /></span>
+        <button
+          v-if="item.unread"
+          class="button button-secondary button-small"
+          type="button"
+          @click="markRead(item)"
+        >
+          Mark read
+        </button>
       </article>
     </section>
     <section v-else class="panel empty-state">
@@ -119,8 +181,7 @@ function iconFor(kind) {
         }}
       </h2>
       <p>
-        There are no notifications in this browser session, and notification
-        services are not connected.
+        New queue, appointment, or care updates will appear here.
       </p>
       <button
         v-if="filter !== 'All'"

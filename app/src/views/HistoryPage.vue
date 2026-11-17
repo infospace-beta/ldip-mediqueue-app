@@ -1,5 +1,5 @@
-﻿<script setup>
-import { computed, ref } from "vue";
+<script setup>
+import { computed, onMounted, ref } from "vue";
 import {
   Activity,
   CalendarDays,
@@ -8,8 +8,13 @@ import {
   ShieldCheck,
 } from "@lucide/vue";
 import { medicalHistory } from "../data/patient";
+import { useAuthStore } from "@/stores/auth.store";
+import { mediqueueService } from "@/services/mediqueue.service";
 
+const auth = useAuthStore();
 const search = ref("");
+const isLoading = ref(true);
+const errorMessage = ref("");
 const filteredHistory = computed(() =>
   medicalHistory.filter((visit) =>
     `${visit.date} ${visit.doctor} ${visit.department} ${visit.diagnosis}`
@@ -17,6 +22,37 @@ const filteredHistory = computed(() =>
       .includes(search.value.toLowerCase()),
   ),
 );
+async function loadHistory() {
+  const patientId = auth.user?.id;
+  if (!patientId) {
+    errorMessage.value = "Your patient account could not be identified.";
+    isLoading.value = false;
+    return;
+  }
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    const records = await mediqueueService.getPatientClinicalRecords(patientId);
+    medicalHistory.splice(
+      0,
+      medicalHistory.length,
+      ...records.map((record) => ({
+        id: record.id,
+        date: new Date(record.recordedAt).toLocaleDateString(),
+        doctor: record.authoredByName,
+        department: `Visit #${record.queueTicketId}`,
+        diagnosis: record.diagnosis,
+        treatment: record.treatment,
+        prescription: record.prescription || "None recorded",
+      })),
+    );
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error ? error.message : "Unable to load medical history.";
+  } finally {
+    isLoading.value = false;
+  }
+}
 function downloadSummary() {
   const rows = [
     "Date,Doctor,Department,Diagnosis,Treatment,Prescription",
@@ -29,7 +65,7 @@ function downloadSummary() {
         visit.treatment,
         visit.prescription,
       ]
-        .map((value) => `"${value}"`)
+        .map((value) => `"${String(value ?? "").replaceAll('"', '""')}"`)
         .join(","),
     ),
   ];
@@ -44,6 +80,7 @@ function downloadSummary() {
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+onMounted(() => void loadHistory());
 </script>
 
 <template>
@@ -53,8 +90,7 @@ function downloadSummary() {
         <span class="eyebrow">VISIT RECORDS</span>
         <h1>Medical history</h1>
         <p>
-          Only visit details held in this browser session are shown; no
-          medical-records service is connected.
+          Clinical records shared by your care team appear here.
         </p>
       </div>
       <button
@@ -69,7 +105,7 @@ function downloadSummary() {
     <section class="panel history-panel">
       <div class="panel-header">
         <div>
-          <span class="eyebrow">VISIT RECORDS</span>
+          <span class="eyebrow">CLINICAL RECORDS</span>
           <h2>Previous visits</h2>
         </div>
         <label class="history-search"
@@ -84,14 +120,14 @@ function downloadSummary() {
           <thead>
             <tr>
               <th>Visit date</th>
-              <th>Doctor & department</th>
+              <th>Recorded by / visit</th>
               <th>Diagnosis</th>
               <th>Treatment</th>
               <th>Prescription</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="visit in filteredHistory" :key="visit.date">
+            <tr v-for="visit in filteredHistory" :key="visit.id">
               <td class="history-date">
                 <CalendarDays :size="15" /> {{ visit.date }}
               </td>
@@ -108,6 +144,9 @@ function downloadSummary() {
           </tbody>
         </table>
       </div>
+      <div v-else-if="isLoading" class="history-empty" role="status">
+        Loading your clinical records…
+      </div>
       <div v-else class="history-empty">
         <ClipboardList :size="20" aria-hidden="true" />
         <div>
@@ -116,15 +155,19 @@ function downloadSummary() {
             {{
               search
                 ? "No records match this search."
-                : "Records are not connected to a live care provider."
+                : "No clinical records are available."
             }}
           </p>
         </div>
       </div>
       <div class="history-footer">
-        <ShieldCheck :size="15" aria-hidden="true" /> History is limited to
-        local session data; it is not retrieved from a medical records system.
+        <ShieldCheck :size="15" aria-hidden="true" /> These records are retrieved
+        from the MediQueue clinical-record service.
       </div>
     </section>
+    <p v-if="errorMessage" class="form-message form-error" role="alert">
+      {{ errorMessage }}
+      <button class="text-link" type="button" @click="loadHistory">Retry</button>
+    </p>
   </div>
 </template>

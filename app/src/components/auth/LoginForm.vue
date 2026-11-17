@@ -5,7 +5,7 @@
         <p class="auth-eyebrow">MediQueue access</p>
         <h1 class="auth-heading">Welcome back</h1>
         <p class="auth-supporting">
-          Sign in to open the workspace assigned to your demo role.
+          Sign in to access your MediQueue workspace.
         </p>
       </div>
     </template>
@@ -14,10 +14,10 @@
       <BaseInput
         id="login-email"
         v-model="formData.email"
-        label="Email address"
-        type="email"
-        autocomplete="email"
-        placeholder="you@example.com"
+        label="Email or username"
+        type="text"
+        autocomplete="username"
+        placeholder="you@example.com or username"
         :errors="v$.email.$errors"
       />
       <BaseInput
@@ -56,20 +56,14 @@
       </p>
     </form>
 
-    <template #footer>
-      <p class="auth-note">
-        Local demo accounts (with <code>VITE_MODE=local</code>) are documented
-        in the project README.
-      </p>
-    </template>
-  </BaseCard>
+</BaseCard>
 </template>
 
 <script setup lang="ts">
 import { onMounted, reactive } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import useVuelidate from "@vuelidate/core";
-import { required, email, minLength } from "@vuelidate/validators";
+import { required, minLength } from "@vuelidate/validators";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -87,7 +81,7 @@ const formData = reactive({
 });
 
 const rules = {
-  email: { required, email },
+  email: { required },
   password: { required, minLength: minLength(3) },
 };
 
@@ -114,7 +108,7 @@ const onSubmit = async () => {
     requestedTarget.startsWith("/") &&
     !requestedTarget.startsWith("//") &&
     !requestedTarget.includes("\\") &&
-    !/[\u0000-\u001f]/.test(requestedTarget)
+    !Array.from(requestedTarget).some((character) => character.charCodeAt(0) < 32)
       ? requestedTarget
       : null;
   auth.returnUrl = null;

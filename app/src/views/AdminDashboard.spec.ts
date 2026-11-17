@@ -8,6 +8,7 @@ import { useTheme } from "@/composables/useTheme";
 import { authGuard } from "@/router/guards";
 import { routes } from "@/router/routes";
 import { hospitalManagementService } from "@/services/hospitalManagement.service";
+import { mediqueueService } from "@/services/mediqueue.service";
 import { useAuthStore } from "@/stores/auth.store";
 import type { UserRole } from "@/types/models";
 import AdminDashboard from "@/views/AdminDashboard.vue";
@@ -15,24 +16,92 @@ import AdminDashboard from "@/views/AdminDashboard.vue";
 vi.mock("@/services/hospitalManagement.service", () => ({
   hospitalManagementService: {
     getHospitals: vi.fn(),
+    getHospital: vi.fn(),
     registerHospital: vi.fn(),
   },
 }));
+
+vi.mock("@/services/mediqueue.service", () => ({
+  mediqueueService: {
+    getAdminHospitals: vi.fn(),
+    getHospital: vi.fn(),
+    getHospitalSummary: vi.fn(),
+    getHospitalDepartments: vi.fn(),
+    getHospitalStaff: vi.fn(),
+    getHospitalDoctorsAdmin: vi.fn(),
+    getHospitalEmergencyCases: vi.fn(),
+    getDepartmentQueue: vi.fn(),
+    getUsers: vi.fn(),
+    createUser: vi.fn(),
+    updateUser: vi.fn(),
+    createDepartment: vi.fn(),
+    createHospitalStaff: vi.fn(),
+    createHospitalDoctor: vi.fn(),
+    setDoctorAvailability: vi.fn(),
+    resolveEmergency: vi.fn(),
+  },
+}));
+
+const hospitalFixture = {
+  id: 1,
+  name: "MediQueue Test Hospital",
+  registrationNumber: "TEST-MQ-001",
+  hospitalType: "PUBLIC" as const,
+  address: "Nakuru",
+  county: "Nakuru",
+  town: "Nakuru",
+  phone: "0700000000",
+  email: "test@mediqueue.example",
+  status: "ACTIVE" as const,
+};
 
 describe("AdminDashboard", () => {
   let wrapper: VueWrapper | undefined;
 
   beforeEach(() => {
     localStorage.clear();
-    useTheme().setTheme("system");
     setActivePinia(createPinia());
+    useTheme().setTheme("system");
     window.innerWidth = 390;
+
+    vi.mocked(mediqueueService.getAdminHospitals).mockResolvedValue([
+      hospitalFixture,
+    ]);
+    vi.mocked(mediqueueService.getHospitalSummary).mockResolvedValue({
+      hospitalId: 1,
+      waitingTickets: 12,
+      averageWaitMinutes: 18,
+      openEmergencyCases: 2,
+      onDutyDoctors: 4,
+    });
+    vi.mocked(mediqueueService.getHospitalDepartments).mockResolvedValue([]);
+    vi.mocked(mediqueueService.getHospitalStaff).mockResolvedValue([]);
+    vi.mocked(mediqueueService.getHospitalDoctorsAdmin).mockResolvedValue([]);
+    vi.mocked(mediqueueService.getHospitalEmergencyCases).mockResolvedValue([]);
+    vi.mocked(mediqueueService.getDepartmentQueue).mockResolvedValue([]);
+    vi.mocked(mediqueueService.getUsers).mockResolvedValue([]);
+
     vi.mocked(hospitalManagementService.getHospitals).mockResolvedValue([]);
+    vi.mocked(hospitalManagementService.registerHospital).mockResolvedValue({
+      id: "1",
+      name: "MediQueue Test Hospital",
+      hospitalType: "PUBLIC",
+      registrationIdentifier: "TEST-MQ-001",
+      phone: "0700000000",
+      email: "test@mediqueue.example",
+      location: {
+        address: "Nakuru",
+        city: "Nakuru",
+        region: "Nakuru",
+      },
+      status: "active",
+    });
   });
 
   afterEach(() => {
     wrapper?.unmount();
     wrapper = undefined;
+    vi.clearAllMocks();
   });
 
   function signInAs(role: UserRole) {
@@ -42,7 +111,10 @@ describe("AdminDashboard", () => {
       firstName: "Avery",
       lastName: "Admin",
       role,
+      backendRole: "SYSTEM_ADMIN",
+      hospitalId: null,
     };
+    useAuthStore().token = "test-access-token";
   }
 
   function createDestination(path: string): RouteLocationNormalized {
@@ -61,6 +133,7 @@ describe("AdminDashboard", () => {
     const pinia = createPinia();
     setActivePinia(pinia);
     signInAs("admin");
+
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [
@@ -72,68 +145,76 @@ describe("AdminDashboard", () => {
         { path: "/admin/dashboard", component: AdminDashboard },
       ],
     });
+
     await router.push("/admin/dashboard");
     await router.isReady();
+
     wrapper = mount(AdminDashboard, {
       attachTo: document.body,
       global: { plugins: [pinia, router] },
     });
+
     await flushPromises();
     return { dashboard: wrapper, router };
   }
 
-  it("renders the admin overview without fabricated operational data", async () => {
+  it("renders the live admin overview using returned hospital data", async () => {
     const { dashboard } = await mountDashboard();
 
     expect(dashboard.get(".admin-brand-mark img").attributes("src")).toBe(
       "/mediqueue-logo.png",
     );
     expect(dashboard.get("h1").text()).toBe("Overview");
-    expect(dashboard.get("h2").text()).toBe("Hospital administration overview");
-    expect(dashboard.text()).toContain("Administration service not connected.");
-    expect(dashboard.text()).toContain("No administrative data available");
-    expect(dashboard.find(".admin-metric-grid").exists()).toBe(false);
+    expect(dashboard.text()).toContain("Hospital administration overview");
+    expect(dashboard.text()).toContain("MediQueue Test Hospital");
+    expect(dashboard.find(".admin-metrics-grid").exists()).toBe(true);
+    expect(dashboard.text()).toContain("Waiting tickets");
+    expect(dashboard.text()).toContain("12");
+    expect(dashboard.text()).toContain("Open emergency cases");
+    expect(dashboard.text()).toContain("Doctors on duty");
     expect(dashboard.findAll("table")).toHaveLength(0);
     expect(dashboard.text()).not.toContain("Demo");
     expect(dashboard.text()).not.toContain("Sample");
+
+    expect(mediqueueService.getAdminHospitals).toHaveBeenCalledOnce();
+    expect(mediqueueService.getHospitalSummary).toHaveBeenCalledWith(1);
   });
 
   it.each([
-    ["User Management", "User data unavailable"],
+    ["User Management", "No user records"],
     ["Hospital Management", "Hospital directory"],
-    ["Department Management", "Department data unavailable"],
-    ["Medical Staff", "Medical staff data unavailable"],
-    ["Appointment Oversight", "Appointment data unavailable"],
-    ["Queue Oversight", "Queue data unavailable"],
-    ["Emergency Oversight", "Emergency data unavailable"],
-    ["System Settings", "System settings unavailable"],
-  ])(
-    "navigates to %s and shows the honest unavailable state",
-    async (label) => {
-      const { dashboard } = await mountDashboard();
-      const navButton = dashboard
-        .findAll(".admin-nav-link")
-        .find((button) => button.text().includes(label));
+    ["Department Management", "No department records"],
+    ["Medical Staff", "No medical staff records"],
+    ["Appointment Oversight", "Hospital-wide appointment listing is not available"],
+    ["Queue Oversight", "No queue tickets"],
+    ["Emergency Oversight", "No emergency cases"],
+    ["System Settings", "System settings are not available"],
+  ])("navigates to %s and shows its actual section state", async (label, expectedText) => {
+    const { dashboard } = await mountDashboard();
+    const navButton = dashboard
+      .findAll(".admin-nav-link")
+      .find((button) => button.text().includes(label));
 
-      expect(navButton).toBeDefined();
-      await navButton!.trigger("click");
+    expect(navButton).toBeDefined();
+    await navButton!.trigger("click");
+    await flushPromises();
 
-      expect(dashboard.get("h1").text()).toBe(label);
-      expect(
-        dashboard.find(".admin-nav-link-active").attributes("aria-current"),
-      ).toBe("page");
-      if (label === "Hospital Management") {
-        expect(dashboard.find("#hospital-management-title").text()).toBe(label);
-        expect(dashboard.find("#hospital-registration-title").exists()).toBe(
-          true,
-        );
-        return;
-      }
-      expect(dashboard.text()).toContain("Awaiting integration");
-      expect(dashboard.text()).toContain("will appear here");
-      expect(dashboard.findAll("table")).toHaveLength(0);
-    },
-  );
+    expect(dashboard.get("h1").text()).toBe(label);
+    expect(
+      dashboard.find(".admin-nav-link-active").attributes("aria-current"),
+    ).toBe("page");
+    expect(dashboard.text()).toContain(expectedText);
+
+    if (label === "Hospital Management") {
+      expect(dashboard.find("#hospital-management-title").exists()).toBe(true);
+      expect(dashboard.find("#hospital-directory-title").exists()).toBe(true);
+      expect(dashboard.find("#hospital-registration-title").exists()).toBe(true);
+    }
+
+    if (label === "User Management") {
+      expect(mediqueueService.getUsers).toHaveBeenCalledOnce();
+    }
+  });
 
   it("supports responsive navigation state and Escape dismissal", async () => {
     const { dashboard } = await mountDashboard();
@@ -145,6 +226,7 @@ describe("AdminDashboard", () => {
 
     await menuButton.trigger("click");
     await flushPromises();
+
     expect(menuButton.attributes("aria-expanded")).toBe("true");
     expect(dashboard.get(".admin-sidebar").classes()).toContain(
       "admin-sidebar-open",
@@ -156,6 +238,7 @@ describe("AdminDashboard", () => {
 
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     await flushPromises();
+
     expect(menuButton.attributes("aria-expanded")).toBe("false");
     expect(dashboard.get(".admin-sidebar").classes()).not.toContain(
       "admin-sidebar-open",
@@ -200,15 +283,18 @@ describe("AdminDashboard", () => {
     ).toBe("true");
   });
 
-  it("displays only the signed-in session username in the account area", async () => {
+  it("displays the signed-in administrator name and backend role", async () => {
     const { dashboard } = await mountDashboard();
 
-    expect(dashboard.text()).toContain("admin@example.test");
-    expect(dashboard.text()).not.toContain("Avery Admin");
+    expect(dashboard.text()).toContain("Avery Admin");
+    expect(dashboard.text()).toContain("SYSTEM_ADMIN");
+    expect(dashboard.text()).not.toContain("Profile information unavailable.");
 
     useAuthStore().user = null;
     await flushPromises();
-    expect(dashboard.text()).toContain("Profile information unavailable.");
+
+    expect(dashboard.text()).toContain("Administrator");
+    expect(dashboard.text()).not.toContain("Avery Admin");
   });
 
   it("preserves the admin path and restricts it to the admin role", () => {
@@ -239,10 +325,13 @@ describe("AdminDashboard", () => {
       .findAll(".admin-nav-link")
       .find((button) => button.text().includes("Log out"))
       ?.trigger("click");
+
     expect(useAuthStore().user).not.toBeNull();
+
     document.body
       .querySelector(".confirmation-dialog button:last-child")
       ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
     await flushPromises();
 
     expect(useAuthStore().user).toBeNull();

@@ -1,3 +1,4 @@
+
 import js from "@eslint/js";
 import pluginVue from "eslint-plugin-vue";
 import {
@@ -35,13 +36,15 @@ export default defineConfigWithVueTs(
   {
     name: "app/rules",
     rules: {
-      /**Views and layouts are legitimately single-word */
+      /** Views and layouts are legitimately single-word */
       "vue/multi-word-component-names": "off",
-      /**Type-based props already express optionality; an implicit undefined
-       * default is the intent, so this rule only adds noise in a TS codebase */
+
+      /** Type-based props already express optionality */
       "vue/require-default-prop": "off",
+
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "no-debugger": "warn",
+
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
@@ -50,11 +53,35 @@ export default defineConfigWithVueTs(
           ignoreRestSiblings: true,
         },
       ],
-      /**Type-only imports keep the runtime bundle honest */
+
+      /** Type-only imports keep the runtime bundle honest */
       "@typescript-eslint/consistent-type-imports": [
         "warn",
         { prefer: "type-imports", fixStyle: "inline-type-imports" },
       ],
+    },
+  },
+  {
+    name: "app/javascript-vue-components",
+    files: [
+      "src/components/JoinQueueForm.vue",
+      "src/components/PatientLayout.vue",
+      "src/components/QueueCard.vue",
+      "src/components/Sidebar.vue",
+      "src/components/StatusBadge.vue",
+      "src/components/SummaryCard.vue",
+      "src/views/AppointmentsPage.vue",
+      "src/views/DashboardPage.vue",
+      "src/views/EmergencyPage.vue",
+      "src/views/HistoryPage.vue",
+      "src/views/JoinQueuePage.vue",
+      "src/views/NotificationsPage.vue",
+      "src/views/ProfilePage.vue",
+      "src/views/QueuePage.vue",
+      "src/views/SettingsPage.vue",
+    ],
+    rules: {
+      "vue/block-lang": "off",
     },
   },
 );

@@ -15,8 +15,7 @@ export const useUsersStore = defineStore("users", () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const { data } = await usersService.getAll();
-      users.value = data;
+      users.value = await usersService.getAll();
     } catch (err) {
       error.value = apiMessage(err, "Failed to load users.");
       console.error("Error loading users:", err);

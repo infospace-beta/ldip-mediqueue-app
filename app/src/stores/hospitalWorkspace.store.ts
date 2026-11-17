@@ -76,7 +76,13 @@ export const useHospitalWorkspaceStore = defineStore(
         state.value = {
           staffUserId,
           assignments,
-          selectedHospitalId: null,
+          selectedHospitalId:
+            assignments.find(
+              (assignment) =>
+                assignment.status === "active" &&
+                assignment.hospital.status === "active" &&
+                assignment.hospitalId === assignment.hospital.id,
+            )?.hospitalId ?? null,
           isLoading: false,
           isLoaded: true,
           error: null,

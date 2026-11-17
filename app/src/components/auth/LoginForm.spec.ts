@@ -4,14 +4,15 @@ import { createPinia, setActivePinia } from "pinia";
 import { createMemoryHistory, createRouter } from "vue-router";
 import LoginForm from "@/components/auth/LoginForm.vue";
 import { authService } from "@/services/auth.service";
-import type { User } from "@/types/models";
+import type { BackendCurrentUser } from "@/services/auth.service";
 
-const user: User = {
+const patientProfile: BackendCurrentUser = {
   id: 1,
   username: "test@gmail.com",
-  firstName: "Test",
-  lastName: "User",
-  role: "patient",
+  email: "test@gmail.com",
+  fullName: "Test User",
+  role: "PATIENT",
+  hospitalId: null,
 };
 
 const createTestRouter = () =>
@@ -77,9 +78,12 @@ describe("LoginForm", () => {
 
   it("uses the auth service and honors returnUrl after login", async () => {
     setActivePinia(createPinia());
-    vi.spyOn(authService, "login").mockResolvedValue({
-      data: { user, token: "demo-token" },
+    const loginSpy = vi.spyOn(authService, "login").mockResolvedValue({
+      data: { accessToken: "test-access-token", tokenType: "Bearer", expiresIn: 900 },
     } as Awaited<ReturnType<typeof authService.login>>);
+    vi.spyOn(authService, "getCurrentUser").mockResolvedValue({
+      data: patientProfile,
+    } as Awaited<ReturnType<typeof authService.getCurrentUser>>);
 
     const router = createTestRouter();
     await router.push("/login?returnUrl=%2Fpatient%2Fdashboard");
@@ -90,10 +94,11 @@ describe("LoginForm", () => {
     await wrapper.get("form").trigger("submit");
     await flushPromises();
 
-    expect(authService.login).toHaveBeenCalledWith({
+    expect(loginSpy).toHaveBeenCalledWith({
       email: "test@gmail.com",
       password: "test",
     });
+    expect(authService.getCurrentUser).toHaveBeenCalled();
     expect(router.currentRoute.value.fullPath).toBe("/patient/dashboard");
   });
 
@@ -125,11 +130,17 @@ describe("LoginForm", () => {
   it("uses the signed-in role dashboard for an unsafe returnUrl", async () => {
     setActivePinia(createPinia());
     vi.spyOn(authService, "login").mockResolvedValue({
-      data: {
-        user: { ...user, role: "responder" },
-        token: "demo-token",
-      },
+      data: { accessToken: "test-access-token", tokenType: "Bearer", expiresIn: 900 },
     } as Awaited<ReturnType<typeof authService.login>>);
+    vi.spyOn(authService, "getCurrentUser").mockResolvedValue({
+      data: {
+        ...patientProfile,
+        username: "responder@example.com",
+        email: "responder@example.com",
+        fullName: "Test Responder",
+        role: "RESPONDER",
+      },
+    } as Awaited<ReturnType<typeof authService.getCurrentUser>>);
 
     const router = createTestRouter();
     await router.push("/login?returnUrl=https%3A%2F%2Fexample.com%2Fadmin");

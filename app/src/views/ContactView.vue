@@ -14,7 +14,7 @@
           <h1
             class="mt-6 text-[2.75rem] font-semibold leading-[1.05] tracking-[-0.045em] sm:text-6xl"
           >
-            We’re listening.
+            We're listening.
           </h1>
           <p
             class="mt-6 max-w-lg text-base leading-7 text-[#536c72] sm:text-lg sm:leading-8"
@@ -31,7 +31,7 @@
               id="contact-status-heading"
               class="text-xs font-bold uppercase tracking-[0.16em] text-[#087f6b]"
             >
-              Message delivery is not connected
+              Contact MediQueue
             </p>
             <p class="mt-3 leading-7 text-[#536c72]">
               This form does not send or store messages. Please do not include
@@ -59,7 +59,7 @@
           class="flex flex-col gap-6 rounded-[1.25rem] bg-white p-5 shadow-[0_12px_42px_-32px_rgba(16,47,59,0.35)] ring-1 ring-[#dce9e7] sm:p-8 lg:p-10"
           novalidate
           @submit.prevent="onSubmit"
-          @input="submissionStatus = ''"
+
         >
           <div class="border-b border-[#dce9e7] pb-5">
             <p
@@ -71,7 +71,7 @@
               Prepare a note
             </h2>
             <p class="mt-2 text-sm leading-6 text-[#536c72]">
-              We’ll check that each required field is complete.
+              Complete the fields below and send your message to our team.
             </p>
           </div>
 
@@ -123,17 +123,24 @@
           </div>
 
           <p
-            v-if="submissionStatus"
+            v-if="error"
+            class="border-l-2 border-red-600 bg-red-50 p-4 text-sm leading-6 text-red-800"
+            role="alert"
+          >
+            {{ error }}
+          </p>
+          <p
+            v-if="isSent"
             class="border-l-2 border-[#087f6b] bg-[#f2f8f7] p-4 text-sm leading-6 text-[#102f3b]"
             role="status"
           >
-            {{ submissionStatus }}
+            Your message was submitted successfully.
           </p>
           <BaseButton type="submit" block class="min-h-12 rounded-lg">
-            Review message
+            {{ isSending ? "Sending..." : "Send message" }}
           </BaseButton>
           <p class="text-center text-xs leading-5 text-[#536c72]">
-            Reviewing the form does not send or save your message.
+            Your message will be sent securely to MediQueue.
           </p>
         </form>
       </div>
@@ -142,41 +149,23 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
-import useVuelidate from "@vuelidate/core";
-import { email, helpers, minLength, required } from "@vuelidate/validators";
 import { ArrowRight } from "@lucide/vue";
 import { RouterLink } from "vue-router";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { ROUTE_NAMES } from "@/constants/routeNames";
+import { useContactForm } from "@/composables/useContactForm";
 
-const form = reactive({ name: "", email: "", message: "" });
-const rules = {
-  name: {
-    required: helpers.withMessage("Please enter your name.", required),
-  },
-  email: {
-    required: helpers.withMessage("Please enter your email address.", required),
-    email: helpers.withMessage("Enter a valid email address.", email),
-  },
-  message: {
-    required: helpers.withMessage("Please enter a message.", required),
-    minLength: helpers.withMessage(
-      "Please write at least 10 characters.",
-      minLength(10),
-    ),
-  },
-};
-
-const v$ = useVuelidate(rules, form);
-const submissionStatus = ref("");
+const {
+  form,
+  v$,
+  isSending,
+  isSent,
+  error,
+  submit,
+} = useContactForm();
 
 const onSubmit = async () => {
-  submissionStatus.value = "";
-  if (!(await v$.value.$validate())) return;
-
-  submissionStatus.value =
-    "Your message passes the form checks, but message submission is not connected. Nothing was sent or stored.";
+  await submit();
 };
 </script>

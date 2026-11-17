@@ -98,8 +98,8 @@ const navigation: {
     <div class="doctor-sidebar-note">
       <span class="doctor-integration-dot" aria-hidden="true" />
       <span>
-        <strong>Backend integration pending</strong>
-        <small>Clinical data is unavailable</small>
+        <strong>Hospital services connected</strong>
+        <small>Live clinical workflows available</small>
       </span>
     </div>
     <LogoutAction
