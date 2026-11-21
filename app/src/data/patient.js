@@ -1,4 +1,4 @@
-import { reactive } from "vue";
+﻿import { reactive } from "vue";
 
 export const patient = reactive({
   name: "",
@@ -90,7 +90,7 @@ export function setPatientQueue(ticket, hospitalName = "", hospitalId = null) {
     ticketId: ticket.id,
     hospitalId: ticket.hospitalId ?? hospitalId,
     departmentId: ticket.departmentId,
-    hospital: hospitalName,
+    hospital: ticket.hospitalName ?? hospitalName,
     department: ticket.departmentName,
     service: "",
     number: 0,

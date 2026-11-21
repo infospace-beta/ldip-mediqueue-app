@@ -119,3 +119,9 @@ export interface ApiErrorBody {
   message?: string;
   errors?: Record<string, string[]>;
 }
+
+export interface AdminContactMessage extends ContactMessage {
+  id: number;
+  status: "NEW" | "READ" | "RESOLVED";
+  createdAt: string;
+}

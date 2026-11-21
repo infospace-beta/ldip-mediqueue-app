@@ -24,6 +24,7 @@ import {
   type EmergencyRecord,
   type HospitalRecord,
   type QueueTicketRecord,
+  type SystemSettingRecord,
   type UserRecord,
 } from "@/services/mediqueue.service";
 import "@/assets/admin.css";
@@ -73,6 +74,13 @@ const staff = ref<UserRecord[]>([]);
 const doctors = ref<UserRecord[]>([]);
 const queueItems = ref<(QueueTicketRecord & { departmentName: string })[]>([]);
 const emergencyCases = ref<EmergencyRecord[]>([]);
+const systemSettings = ref<SystemSettingRecord[]>([]);
+const selectedSettingKey = ref("");
+const settingsForm = reactive({
+  settingValue: "",
+  category: "GENERAL",
+  description: "",
+});
 const isLoading = ref(true);
 const isLoadingSection = ref(false);
 const isSubmitting = ref(false);
@@ -200,6 +208,80 @@ async function loadHospitalData(selectedHospitalId: number) {
   isLoadingSection.value = false;
 }
 
+function selectSystemSetting(setting: SystemSettingRecord) {
+  selectedSettingKey.value = setting.settingKey;
+  settingsForm.settingValue = setting.settingValue;
+  settingsForm.category = setting.category;
+  settingsForm.description = setting.description ?? "";
+}
+
+async function loadSystemSettings() {
+  isLoadingSection.value = true;
+  sectionError.value = "";
+
+  try {
+    systemSettings.value = await mediqueueService.getSystemSettings();
+
+    if (systemSettings.value.length > 0) {
+      const selected = systemSettings.value.find(
+        (setting) => setting.settingKey === selectedSettingKey.value,
+      ) ?? systemSettings.value[0];
+
+      if (selected) selectSystemSetting(selected);
+    } else {
+      selectedSettingKey.value = "";
+      settingsForm.settingValue = "";
+      settingsForm.category = "GENERAL";
+      settingsForm.description = "";
+    }
+  } catch (error) {
+    sectionError.value =
+      error instanceof Error
+        ? error.message
+        : "Unable to load system settings.";
+  } finally {
+    isLoadingSection.value = false;
+  }
+}
+async function saveSystemSetting() {
+  if (!selectedSettingKey.value) {
+    sectionError.value = "Select a setting to update.";
+    return;
+  }
+
+  isSubmitting.value = true;
+  sectionError.value = "";
+  actionMessage.value = "";
+
+  try {
+    const updated = await mediqueueService.updateSystemSetting(
+      selectedSettingKey.value,
+      {
+        settingValue: settingsForm.settingValue,
+        category: settingsForm.category,
+        description: settingsForm.description,
+      },
+    );
+
+    const index = systemSettings.value.findIndex(
+      (setting) => setting.settingKey === updated.settingKey,
+    );
+
+    if (index !== -1) {
+      systemSettings.value[index] = updated;
+    }
+
+    selectSystemSetting(updated);
+    actionMessage.value = "System setting updated successfully.";
+  } catch (error) {
+    sectionError.value =
+      error instanceof Error
+        ? error.message
+        : "Unable to update the system setting.";
+  } finally {
+    isSubmitting.value = false;
+  }
+}
 async function loadSection(section: AdminSection) {
   sectionError.value = "";
   actionMessage.value = "";
@@ -221,7 +303,15 @@ async function loadSection(section: AdminSection) {
     }
     return;
   }
-  if (section === "appointments" || section === "settings") return;
+  if (section === "appointments") return;
+  if (section === "settings") {
+    if (!isSystemAdmin.value) {
+      sectionError.value = "System settings are restricted to system administrators.";
+      return;
+    }
+    await loadSystemSettings();
+    return;
+  }
   if (!hospitalId.value) {
     sectionError.value = "Select an authorized hospital first.";
     return;
@@ -625,8 +715,95 @@ onMounted(() => void loadDashboard());
         </template>
 
         <template v-else-if="activeSection === 'settings'">
-          <section class="admin-page-heading"><div><span class="admin-eyebrow">CONFIGURATION</span><h2>System Settings</h2><p>No system-settings endpoint is currently published by the backend.</p></div></section>
-          <StateEmpty title="System settings are not available" description="No backend endpoint exists to read or update system-wide settings." />
+          <section class="admin-page-heading">
+            <div>
+              <span class="admin-eyebrow">CONFIGURATION</span>
+              <h2>System Settings</h2>
+              <p>Manage application-wide configuration stored in the MediQueue backend.</p>
+            </div>
+            <button
+              class="button button-secondary"
+              type="button"
+              :disabled="isLoadingSection"
+              @click="loadSystemSettings"
+            >
+              {{ isLoadingSection ? "Loading..." : "Refresh settings" }}
+            </button>
+          </section>
+
+          <section class="admin-overview-panel">
+            <h2>Available settings</h2>
+            <p v-if="isLoadingSection">Loading system settings...</p>
+
+            <StateEmpty
+              v-else-if="!systemSettings.length"
+              title="No system settings found"
+              description="There are currently no saved system settings."
+            />
+
+            <ul v-else class="admin-record-list">
+              <li
+                v-for="setting in systemSettings"
+                :key="setting.id"
+              >
+                <strong>{{ setting.settingKey }}</strong>
+                <span>
+                  {{ setting.category }} � {{ setting.settingValue }}
+                </span>
+                <button
+                  class="button button-secondary button-small"
+                  type="button"
+                  @click="selectSystemSetting(setting)"
+                >
+                  {{ selectedSettingKey === setting.settingKey ? "Selected" : "Edit" }}
+                </button>
+              </li>
+            </ul>
+          </section>
+
+          <section v-if="selectedSettingKey" class="admin-overview-panel">
+            <h2>Edit system setting</h2>
+            <p>Setting key: <strong>{{ selectedSettingKey }}</strong></p>
+
+            <form class="admin-form-grid" @submit.prevent="saveSystemSetting">
+              <label>
+                Setting value
+                <input
+                  v-model="settingsForm.settingValue"
+                  type="text"
+                  maxlength="5000"
+                  required
+                />
+              </label>
+
+              <label>
+                Category
+                <input
+                  v-model="settingsForm.category"
+                  type="text"
+                  maxlength="50"
+                  required
+                />
+              </label>
+
+              <label>
+                Description
+                <input
+                  v-model="settingsForm.description"
+                  type="text"
+                  maxlength="500"
+                />
+              </label>
+
+              <button
+                class="button button-primary"
+                type="submit"
+                :disabled="isSubmitting"
+              >
+                {{ isSubmitting ? "Saving..." : "Save changes" }}
+              </button>
+            </form>
+          </section>
         </template>
 
         <footer class="admin-footer"><span>MediQueue Â· Admin workspace</span><span>Live authorized administration data</span></footer>
