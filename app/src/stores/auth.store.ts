@@ -14,6 +14,7 @@ import {
   type UserRole,
 } from "@/types/models";
 
+
 function mapBackendRole(
   role: string | null | undefined,
 ): UserRole | null {
@@ -29,14 +30,15 @@ function mapBackendRole(
     case "RECEPTIONIST":
     case "MEDICAL_STAFF":
       return "staff";
-   case "HOSPITAL_ADMIN":
-       return "admin";
-  case "SYSTEM_ADMIN":
+    case "HOSPITAL_ADMIN":
+      return "admin";
+    case "SYSTEM_ADMIN":
       return "admin";
     default:
       return null;
   }
 }
+
 
 function mapProfileToUser(
   profile: Awaited<ReturnType<typeof authService.getCurrentUser>>["data"],
