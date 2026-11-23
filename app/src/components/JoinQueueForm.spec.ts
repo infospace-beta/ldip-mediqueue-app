@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia, type Pinia } from "pinia";
 import {
@@ -62,6 +62,8 @@ describe("JoinQueueForm", () => {
       patientId: 7,
       departmentId: 10,
       departmentName: "General Practice",
+      hospitalId: 1,
+      hospitalName: "Example Hospital",
       status: "WAITING",
       joinedAt: "2026-11-15T10:00:00",
       position: 1,

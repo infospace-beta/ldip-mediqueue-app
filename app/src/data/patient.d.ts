@@ -1,4 +1,4 @@
-export interface PatientProfile {
+﻿export interface PatientProfile {
   name: string;
   id: string;
   username: string;
@@ -73,6 +73,7 @@ export function setPatientQueue(
   ticket: {
     id: number;
     hospitalId?: number;
+    hospitalName?: string;
     departmentId: number;
     departmentName: string;
     status: string;
