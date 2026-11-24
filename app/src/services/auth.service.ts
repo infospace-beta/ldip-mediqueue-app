@@ -1,5 +1,4 @@
-
-import api from "@/services/http/client";
+﻿import api from "@/services/http/client";
 import { supabase } from "@/services/supabase";
 
 export interface LoginCredentials {
@@ -44,13 +43,35 @@ export const authService = {
     const accessToken = data.session?.access_token;
 
     if (!accessToken) {
-      throw new Error(
-        "Supabase did not return an access token."
-      );
+      throw new Error("Supabase did not return an access token.");
     }
 
-    // Exchange the verified Supabase token for a MediQueue JWT.
     return authService.exchangeSupabaseToken(accessToken);
+  },
+
+  // Register a patient through Supabase Auth.
+  signUpPatient: async ({
+    username,
+    email,
+    fullName,
+    password,
+  }: PatientRegistration) => {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          full_name: fullName.trim(),
+          username: username.trim(),
+        },
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
   },
 
   // Exchange Supabase access token with Spring Boot.
@@ -62,7 +83,4 @@ export const authService = {
 
   getCurrentUser: () =>
     api.get<BackendCurrentUser>("/api/v1/auth/me"),
-
-  registerPatient: (registration: PatientRegistration) =>
-    api.post<string>("/api/v1/auth/register", registration),
 };

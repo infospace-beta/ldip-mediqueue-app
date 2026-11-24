@@ -32,6 +32,7 @@ vi.mock("@/services/mediqueue.service", () => ({
     getHospitalEmergencyCases: vi.fn(),
     getDepartmentQueue: vi.fn(),
     getUsers: vi.fn(),
+    getSystemSettings: vi.fn(),
     createUser: vi.fn(),
     updateUser: vi.fn(),
     createDepartment: vi.fn(),
@@ -80,6 +81,7 @@ describe("AdminDashboard", () => {
     vi.mocked(mediqueueService.getHospitalEmergencyCases).mockResolvedValue([]);
     vi.mocked(mediqueueService.getDepartmentQueue).mockResolvedValue([]);
     vi.mocked(mediqueueService.getUsers).mockResolvedValue([]);
+    vi.mocked(mediqueueService.getSystemSettings).mockResolvedValue([]);
 
     vi.mocked(hospitalManagementService.getHospitals).mockResolvedValue([]);
     vi.mocked(hospitalManagementService.registerHospital).mockResolvedValue({
@@ -188,7 +190,7 @@ describe("AdminDashboard", () => {
     ["Appointment Oversight", "Hospital-wide appointment listing is not available"],
     ["Queue Oversight", "No queue tickets"],
     ["Emergency Oversight", "No emergency cases"],
-    ["System Settings", "System settings are not available"],
+    ["System Settings", "No system settings found"],
   ])("navigates to %s and shows its actual section state", async (label, expectedText) => {
     const { dashboard } = await mountDashboard();
     const navButton = dashboard
