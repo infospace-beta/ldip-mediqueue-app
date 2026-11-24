@@ -30,7 +30,8 @@ function mapBackendRole(
     case "MEDICAL_STAFF":
       return "staff";
     case "HOSPITAL_ADMIN":
-      return "admin";
+case "SYSTEM_ADMIN":
+  return "admin";
     default:
       return null;
   }
