@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia, type Pinia } from "pinia";
 import {
@@ -62,6 +62,8 @@ describe("JoinQueueForm", () => {
       patientId: 7,
       departmentId: 10,
       departmentName: "General Practice",
+      hospitalId: 1,
+      hospitalName: "Example Hospital",
       status: "WAITING",
       joinedAt: "2026-11-15T10:00:00",
       position: 1,
@@ -88,6 +90,41 @@ describe("JoinQueueForm", () => {
       "Select a hospital and department to join its queue.",
     );
     expect(mediqueueService.joinQueue).not.toHaveBeenCalled();
+  });
+
+  it("explains when the hospital directory is successfully empty", async () => {
+    vi.mocked(mediqueueService.getHospitals).mockResolvedValueOnce([]);
+
+    const wrapper = await mountForm();
+
+    expect(wrapper.get(".directory-empty").text()).toContain(
+      "No active hospitals are currently available",
+    );
+    expect(wrapper.get("select").element).toHaveProperty("disabled", true);
+    expect(wrapper.get(".button-join").element).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(mediqueueService.joinQueue).not.toHaveBeenCalled();
+  });
+
+  it("offers a safe retry when the hospital directory request fails", async () => {
+    vi.mocked(mediqueueService.getHospitals)
+      .mockRejectedValueOnce(new Error("Directory unavailable"))
+      .mockResolvedValueOnce([]);
+
+    const wrapper = await mountForm();
+
+    expect(wrapper.get('[role="alert"]').text()).toContain(
+      "Directory unavailable",
+    );
+    await wrapper.get('[role="alert"] button').trigger("click");
+    await flushPromises();
+
+    expect(mediqueueService.getHospitals).toHaveBeenCalledTimes(2);
+    expect(wrapper.get(".directory-empty").text()).toContain(
+      "No active hospitals are currently available",
+    );
   });
 
   it("loads departments and submits a queue request", async () => {

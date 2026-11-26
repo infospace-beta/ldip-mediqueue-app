@@ -4,7 +4,7 @@ import {
   ArrowRight,
   Bell,
   CalendarDays,
-
+  HeartPulse,
   MapPin,
   TicketCheck,
 } from "@lucide/vue";
@@ -19,11 +19,12 @@ import {
 } from "../data/patient";
 import { useAuthStore } from "@/stores/auth.store";
 import { mediqueueService } from "@/services/mediqueue.service";
-import patientCareImage from "../assets/images/iwaria-inc-q7PY6bXbmzk-unsplash.jpg";
+import patientCareImage from "../assets/images/optimized/care-team.jpg";
 
 const auth = useAuthStore();
 const isLoading = ref(true);
 const dashboardError = ref("");
+const imageUnavailable = ref(false);
 
 function formatDate(value) {
   return value ? new Date(value).toLocaleDateString() : "Date unavailable";
@@ -139,13 +140,24 @@ onMounted(() => {
         </p>
       </div>
       <img
+        v-if="!imageUnavailable"
         class="dashboard-welcome-image"
         :src="patientCareImage"
-        alt="A nurse caring for a patient with a family member nearby"
+        alt="Healthcare professional ready to help a patient"
         width="176"
         height="112"
         decoding="async"
+        @error="imageUnavailable = true"
       />
+      <div
+        v-else
+        class="dashboard-welcome-fallback"
+        role="img"
+        aria-label="Healthcare professional ready to help a patient"
+      >
+        <HeartPulse :size="30" aria-hidden="true" />
+        <span>Patient care</span>
+      </div>
     </section>
     <p v-if="isLoading" class="dashboard-load-state" role="status">
       Loading your live care information…

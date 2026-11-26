@@ -56,6 +56,8 @@ export interface QueueTicketRecord {
   patientId: number;
   departmentId: number;
   departmentName: string;
+  hospitalId: number;
+  hospitalName: string;
   status: "WAITING" | "CALLED" | "SKIPPED" | "COMPLETED" | "CANCELLED";
   joinedAt: string;
   calledAt?: string | null;
@@ -158,7 +160,45 @@ export interface DepartmentRequest {
 const pageParams = { page: 0, size: 100 };
 const pageContent = <T>(page: PageResponse<T>) => page.content;
 
+export interface PatientNotificationPreferenceRecord {
+  queueUpdates: boolean;
+  appointmentReminders: boolean;
+  hospitalAnnouncements: boolean;
+  smsNotifications: boolean;
+  emailNotifications: boolean;
+}
+export interface SystemSettingRecord {
+  id: number;
+  settingKey: string;
+  settingValue: string;
+  category: string;
+  description?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface SystemSettingRequest {
+  settingValue: string;
+  category: string;
+  description?: string;
+}
 export const mediqueueService = {
+  getSystemSettings: async () =>
+    (
+      await api.get<SystemSettingRecord[]>("/api/v1/admin/settings")
+    ).data,
+
+  updateSystemSetting: async (
+    settingKey: string,
+    request: SystemSettingRequest,
+  ) =>
+    (
+      await api.put<SystemSettingRecord>(
+        `/api/v1/admin/settings/${encodeURIComponent(settingKey)}`,
+        request,
+      )
+    ).data,
+
   getHospitals: async () =>
     (await api.get<HospitalDirectoryEntry[]>("/api/v1/directory/hospitals"))
       .data,
@@ -573,6 +613,22 @@ export const mediqueueService = {
       )
     ).data,
 
+  getPatientNotificationPreferences: async () =>
+    (
+      await api.get<PatientNotificationPreferenceRecord>(
+        "/api/v1/patient/notification-preferences",
+      )
+    ).data,
+
+  updatePatientNotificationPreferences: async (
+    request: PatientNotificationPreferenceRecord,
+  ) =>
+    (
+      await api.put<PatientNotificationPreferenceRecord>(
+        "/api/v1/patient/notification-preferences",
+        request,
+      )
+    ).data,
   createClinicalRecord: async (
     ticketId: number,
     request: {

@@ -510,7 +510,7 @@
   gap: 10px;
   padding: 10px 4px;
   border: 0;
-  border-top: 1px solid #edf1f4;
+  border-top: 1px solid var(--app-border);
   background: var(--portal-surface);
   cursor: pointer;
   text-align: left;
@@ -598,7 +598,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 23px 27px;
-  border: 1px solid #dce7ed;
+  border: 1px solid var(--app-border);
   border-radius: var(--portal-radius);
   background: var(--portal-surface);
 }
@@ -615,6 +615,26 @@
   border-radius: 9px;
   object-fit: cover;
   object-position: center;
+}
+
+.dashboard-welcome-fallback {
+  display: grid;
+  width: 176px;
+  height: 112px;
+  flex: 0 0 auto;
+  place-content: center;
+  justify-items: center;
+  gap: 5px;
+  border: 1px solid var(--app-border);
+  border-radius: 9px;
+  color: var(--app-brand-primary);
+  background: linear-gradient(
+    135deg,
+    var(--app-brand-soft),
+    var(--app-surface-muted)
+  );
+  font-size: 11px;
+  font-weight: 650;
 }
 
 .eyebrow {
@@ -837,8 +857,8 @@
   gap: 10px 28px;
   margin: 0;
   padding: 14px 0;
-  border-top: 1px solid #edf1f3;
-  border-bottom: 1px solid #edf1f3;
+  border-top: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .queue-facts > div {
@@ -904,7 +924,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px 2px;
-  border-top: 1px solid #edf1f3;
+  border-top: 1px solid var(--app-border);
 }
 
 .appointment-preview-row:first-child {
@@ -961,7 +981,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border-top: 1px solid #edf1f3;
+  border-top: 1px solid var(--app-border);
   color: var(--portal-ink);
   font-size: 12px;
   font-weight: 550;
@@ -1568,7 +1588,7 @@
   gap: 18px;
   margin-top: 21px;
   padding-top: 17px;
-  border-top: 1px solid #e8eef1;
+  border-top: 1px solid var(--app-border);
 }
 
 .app-shell .wait-readout {
@@ -1759,6 +1779,56 @@
   gap: 13px;
 }
 
+.app-shell .patient-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px 16px;
+}
+
+.app-shell .patient-form-field {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: var(--app-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-shell .patient-form-field > :is(input, select, textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  outline: 0;
+  color: var(--app-text-primary);
+  background: var(--app-surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 450;
+}
+
+.app-shell .patient-form-field > textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+.app-shell .patient-form-field > :is(input, select, textarea):focus-visible {
+  border-color: var(--app-brand-primary);
+  box-shadow: 0 0 0 3px var(--app-focus);
+}
+
+.app-shell .patient-form-span-all {
+  grid-column: 1 / -1;
+}
+
+.app-shell .directory-empty {
+  margin: 0;
+  line-height: 1.5;
+}
+
 .app-shell .appointment-card {
   display: flex;
   align-items: center;
@@ -1787,7 +1857,7 @@
   height: 46px;
   flex: 0 0 46px;
   place-items: center;
-  border: 1px solid #d7e8e4;
+  border: 1px solid var(--app-border);
   border-radius: 50%;
   color: var(--portal-green-dark);
   background: var(--portal-green-soft);
@@ -1999,7 +2069,7 @@
   gap: 9px;
   margin: 0;
   padding-top: 14px;
-  border-top: 1px solid #e8eef1;
+  border-top: 1px solid var(--app-border);
   color: var(--app-warning);
   font-size: 13px;
   line-height: 1.55;
@@ -2200,7 +2270,7 @@
   gap: 13px;
   min-height: 76px;
   padding: 13px 2px;
-  border-top: 1px solid #e9eef1;
+  border-top: 1px solid var(--app-border);
   cursor: pointer;
 }
 
@@ -2287,7 +2357,7 @@
   justify-content: space-between;
   gap: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #dfe6eb;
+  border-bottom: 1px solid var(--app-border);
 }
 
 .app-shell .filter-tabs {
@@ -2350,7 +2420,7 @@
   align-items: start;
   gap: 14px;
   padding: 19px 2px;
-  border-bottom: 1px solid #e9eef1;
+  border-bottom: 1px solid var(--app-border);
 }
 
 .app-shell .notification-row:last-child {
@@ -2492,7 +2562,7 @@
 .app-shell .history-table-wrap {
   width: 100%;
   overflow-x: auto;
-  border: 1px solid #e4eaee;
+  border: 1px solid var(--app-border);
   border-radius: 9px;
 }
 
@@ -2517,7 +2587,7 @@
 
 .app-shell .history-table td {
   padding: 14px 13px;
-  border-top: 1px solid #e9eef1;
+  border-top: 1px solid var(--app-border);
   vertical-align: top;
 }
 
@@ -2586,7 +2656,7 @@
 .app-shell .history-footer {
   margin-top: 15px;
   padding-top: 13px;
-  border-top: 1px solid #e9eef1;
+  border-top: 1px solid var(--app-border);
 }
 
 .app-shell .mobile-scrim {
@@ -2690,6 +2760,14 @@
 }
 
 @media (max-width: 680px) {
+  .app-shell .patient-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-shell .patient-form-span-all {
+    grid-column: auto;
+  }
+
   .topbar {
     min-height: 66px;
     gap: 10px;
@@ -2980,9 +3058,13 @@
     padding: 19px 18px;
   }
 
-  .dashboard-welcome-image {
+  .dashboard-welcome-image,
+  .dashboard-welcome-fallback {
     width: 76px;
     height: 72px;
+  }
+
+  .dashboard-welcome-image {
     object-position: 35% center;
   }
 

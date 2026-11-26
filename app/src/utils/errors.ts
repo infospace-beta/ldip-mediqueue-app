@@ -32,3 +32,7 @@ export function apiFieldErrors(error: unknown): Record<string, string[]> {
 export function isValidationError(error: unknown): boolean {
   return axios.isAxiosError(error) && error.response?.status === 422;
 }
+
+export function apiStatus(error: unknown): number | undefined {
+  return axios.isAxiosError(error) ? error.response?.status : undefined;
+}

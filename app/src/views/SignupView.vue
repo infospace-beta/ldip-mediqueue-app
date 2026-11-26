@@ -29,7 +29,7 @@
         label="Username"
         autocomplete="username"
         placeholder="Choose a username"
-        hint="Use 3–50 letters, numbers, dots, underscores, or hyphens."
+        hint="Use 3-50 letters, numbers, dots, underscores, or hyphens."
         :errors="v$.username.$errors"
       />
       <BaseInput
@@ -68,12 +68,16 @@
       >
         {{ submissionError }}
       </p>
+
       <output
         v-if="registrationComplete"
         class="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-950"
         role="status"
       >
-        Your account was created. Continue to sign in.
+        Registration received! We have requested a confirmation email for
+        {{ formData.email }}. Open that email and follow its confirmation link.
+        Once your email is confirmed, return here and sign in. Your MediQueue
+        patient profile will be created when you first sign in.
       </output>
 
       <BaseButton
@@ -83,7 +87,7 @@
         :loading="isSubmitting"
         :disabled="isSubmitting || registrationComplete"
       >
-        {{ registrationComplete ? "Account created" : "Create account" }}
+        {{ registrationComplete ? "Confirmation email requested" : "Create account" }}
       </BaseButton>
 
       <RouterLink
@@ -91,7 +95,7 @@
         :to="{ name: ROUTE_NAMES.login }"
         class="auth-link text-center"
       >
-        Continue to sign in
+        I have confirmed my email — sign in
       </RouterLink>
 
       <p class="text-center text-sm">
@@ -104,17 +108,17 @@
 
     <template #footer>
       <p class="auth-note" role="note">
-        Registration creates a patient account in MediQueue. Sign in after
-        successful registration to access patient services.
+        Confirm your email before signing in. Your patient profile is created
+        securely when MediQueue verifies your confirmed Supabase account.
       </p>
     </template>
   </BaseCard>
 </template>
 
 <script setup lang="ts">
+import axios from "axios";
 import { reactive, ref, toRef } from "vue";
 import { RouterLink } from "vue-router";
-import { useRouter } from "vue-router";
 import useVuelidate from "@vuelidate/core";
 import {
   email,
@@ -130,7 +134,6 @@ import { ROUTE_NAMES } from "@/constants/routeNames";
 import { authService } from "@/services/auth.service";
 import { apiMessage } from "@/utils/errors";
 
-const router = useRouter();
 const formData = reactive({
   username: "",
   fullName: "",
@@ -178,24 +181,28 @@ const registrationComplete = ref(false);
 
 const onSubmit = async () => {
   if (isSubmitting.value || registrationComplete.value) return;
+
   submissionError.value = null;
   isSubmitting.value = true;
 
   try {
     if (!(await v$.value.$validate())) return;
 
-    await authService.registerPatient({
+    await authService.signUpPatient({
       username: formData.username.trim(),
       fullName: formData.fullName.trim(),
       email: formData.email.trim(),
       password: formData.password,
     });
+
     registrationComplete.value = true;
-    window.setTimeout(() => {
-      void router.push({ name: ROUTE_NAMES.login });
-    }, 1200);
   } catch (error) {
-    submissionError.value = apiMessage(error, "Registration failed.");
+    if (axios.isAxiosError(error)) {
+      submissionError.value = apiMessage(error, "Registration failed.");
+    } else {
+      submissionError.value =
+        error instanceof Error ? error.message : "Registration failed.";
+    }
   } finally {
     isSubmitting.value = false;
   }

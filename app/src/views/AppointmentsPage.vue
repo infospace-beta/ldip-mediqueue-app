@@ -25,6 +25,7 @@ const isBooking = ref(false);
 const isLoadingOptions = ref(false);
 const pageError = ref("");
 const bookingError = ref("");
+const bookingOptionsError = ref("");
 const bookingNotice = ref("");
 
 const minDateTime = computed(() => {
@@ -83,10 +84,12 @@ async function loadAppointments() {
 async function loadBookingOptions() {
   isLoadingOptions.value = true;
   bookingError.value = "";
+  bookingOptionsError.value = "";
   try {
     hospitals.value = await mediqueueService.getHospitals();
   } catch (error) {
-    bookingError.value =
+    hospitals.value = [];
+    bookingOptionsError.value =
       error instanceof Error ? error.message : "Unable to load hospitals.";
   } finally {
     isLoadingOptions.value = false;
@@ -99,6 +102,7 @@ async function selectHospital() {
   departmentId.value = null;
   doctorId.value = null;
   bookingError.value = "";
+  bookingOptionsError.value = "";
   if (!hospitalId.value) return;
   isLoadingOptions.value = true;
   try {
@@ -109,7 +113,7 @@ async function selectHospital() {
     departments.value = departmentRecords;
     doctors.value = doctorRecords;
   } catch (error) {
-    bookingError.value =
+    bookingOptionsError.value =
       error instanceof Error
         ? error.message
         : "Unable to load booking options.";
@@ -181,6 +185,20 @@ onMounted(() => {
     <p v-if="bookingError" class="form-message form-error" role="alert">
       {{ bookingError }}
     </p>
+    <p
+      v-if="bookingOptionsError"
+      class="form-message form-error"
+      role="alert"
+    >
+      {{ bookingOptionsError }}
+      <button
+        class="text-link"
+        type="button"
+        @click="hospitalId ? selectHospital() : loadBookingOptions()"
+      >
+        Retry
+      </button>
+    </p>
     <output v-if="bookingNotice" class="form-message service-notice" role="status">
       {{ bookingNotice }}
     </output>
@@ -192,43 +210,92 @@ onMounted(() => {
           <h2>Book a visit</h2>
         </div>
       </div>
-      <form class="appointment-booking-form" @submit.prevent="bookAppointment">
-        <label>
+      <p v-if="isLoadingOptions" class="supporting-copy" role="status">
+        {{
+          hospitals.length
+            ? "Loading available departments and doctors…"
+            : "Loading active hospitals…"
+        }}
+      </p>
+      <p
+        v-if="!isLoadingOptions && !bookingOptionsError && hospitals.length === 0"
+        class="form-message directory-empty"
+        role="status"
+      >
+        No active hospitals are currently available for appointments.
+      </p>
+      <form
+        class="appointment-booking-form patient-form-grid"
+        @submit.prevent="bookAppointment"
+      >
+        <label class="patient-form-field" for="appointment-hospital">
           <span>Hospital</span>
-          <select v-model.number="hospitalId" :disabled="isLoadingOptions" @change="selectHospital">
+          <select
+            id="appointment-hospital"
+            v-model.number="hospitalId"
+            :disabled="isLoadingOptions || hospitals.length === 0"
+            @change="selectHospital"
+          >
             <option :value="null">Select hospital</option>
             <option v-for="hospital in hospitals" :key="hospital.id" :value="hospital.id">
               {{ hospital.name }}
             </option>
           </select>
         </label>
-        <label>
+        <label class="patient-form-field" for="appointment-department">
           <span>Department</span>
-          <select v-model.number="departmentId" :disabled="!departments.length || isLoadingOptions">
+          <select
+            id="appointment-department"
+            v-model.number="departmentId"
+            :disabled="!departments.length || isLoadingOptions"
+          >
             <option :value="null">Select department</option>
             <option v-for="department in departments" :key="department.id" :value="department.id">
               {{ department.name }}
             </option>
           </select>
         </label>
-        <label>
+        <label class="patient-form-field" for="appointment-doctor">
           <span>Doctor</span>
-          <select v-model.number="doctorId" :disabled="!doctors.length || isLoadingOptions">
+          <select
+            id="appointment-doctor"
+            v-model.number="doctorId"
+            :disabled="!doctors.length || isLoadingOptions"
+          >
             <option :value="null">Select doctor</option>
             <option v-for="doctor in doctors" :key="doctor.id" :value="doctor.id">
               {{ doctor.fullName }}
             </option>
           </select>
         </label>
-        <label>
+        <label class="patient-form-field" for="appointment-starts-at">
           <span>Date and time</span>
-          <input v-model="startsAt" type="datetime-local" :min="minDateTime" required />
+          <input
+            id="appointment-starts-at"
+            v-model="startsAt"
+            type="datetime-local"
+            :min="minDateTime"
+            required
+          />
         </label>
-        <label class="appointment-reason-field">
+        <label
+          class="patient-form-field patient-form-span-all"
+          for="appointment-reason"
+        >
           <span>Reason for visit</span>
-          <textarea v-model="reason" maxlength="500" required rows="3"></textarea>
+          <textarea
+            id="appointment-reason"
+            v-model="reason"
+            maxlength="500"
+            required
+            rows="3"
+          ></textarea>
         </label>
-        <button class="button button-primary" type="submit" :disabled="isBooking || isLoadingOptions">
+        <button
+          class="button button-primary patient-form-span-all"
+          type="submit"
+          :disabled="isBooking || isLoadingOptions || hospitals.length === 0"
+        >
           {{ isBooking ? "Booking…" : "Book appointment" }}
         </button>
       </form>

@@ -8,6 +8,16 @@
 
 export type UserRole = "patient" | "responder" | "doctor" | "staff" | "admin";
 
+/** Roles used by the Spring Boot backend API. */
+export type BackendUserRole =
+  | "PATIENT"
+  | "RESPONDER"
+  | "DOCTOR"
+  | "RECEPTIONIST"
+  | "MEDICAL_STAFF"
+  | "HOSPITAL_ADMIN"
+  | "SYSTEM_ADMIN";
+
 export const USER_ROLES: readonly UserRole[] = [
   "patient",
   "responder",
@@ -28,7 +38,7 @@ export interface User {
   email?: string;
   backendRole?: string;
   hospitalId?: number | null;
-  /**Only ever present on the mock records, never on an API response */
+  /** Only ever present on the mock records, never on an API response. */
   password?: string;
 }
 
@@ -70,7 +80,10 @@ export interface HospitalRegistrationInput {
 }
 
 export type HospitalAssignmentStatus =
-  "active" | "pending" | "suspended" | "revoked";
+  | "active"
+  | "pending"
+  | "suspended"
+  | "revoked";
 
 export interface StaffHospitalAssignment {
   id: string;
@@ -114,8 +127,15 @@ export interface ContactReceipt extends ContactMessage {
   id: number;
 }
 
-/**What an API error body looks like once axios has parsed it */
+/** What an API error body looks like once axios has parsed it. */
 export interface ApiErrorBody {
   message?: string;
   errors?: Record<string, string[]>;
+}
+
+
+export interface AdminContactMessage extends ContactMessage {
+  id: number;
+  status: "NEW" | "READ" | "RESOLVED";
+  createdAt: string;
 }

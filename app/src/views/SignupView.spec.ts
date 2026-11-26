@@ -3,12 +3,12 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { createMemoryHistory, createRouter } from "vue-router";
 import SignupView from "@/views/SignupView.vue";
 
-const { registerPatient } = vi.hoisted(() => ({
-  registerPatient: vi.fn(),
+const { signUpPatient } = vi.hoisted(() => ({
+  signUpPatient: vi.fn(),
 }));
 
 vi.mock("@/services/auth.service", () => ({
-  authService: { registerPatient },
+  authService: { signUpPatient },
 }));
 
 describe("SignupView", () => {
@@ -22,11 +22,23 @@ describe("SignupView", () => {
         { path: "/login", name: "login", component: { template: "<div />" } },
       ],
     });
+
     await router.push("/signup");
-    return mount(SignupView, { global: { plugins: [router] } });
+
+    return mount(SignupView, {
+      global: { plugins: [router] },
+    });
   }
 
-  it("validates the username, required fields, email, and password confirmation", async () => {
+  async function fillValidForm(wrapper: ReturnType<typeof mount>) {
+    await wrapper.get("#signup-username").setValue("ana.patient");
+    await wrapper.get("#signup-name").setValue("Ana Patient");
+    await wrapper.get("#signup-email").setValue("ana@example.com");
+    await wrapper.get("#signup-password").setValue("long-password");
+    await wrapper.get("#signup-confirm-password").setValue("long-password");
+  }
+
+  it("validates required fields, email, username, and password confirmation", async () => {
     const wrapper = await mountSignup();
 
     await wrapper.get("form").trigger("submit");
@@ -41,52 +53,57 @@ describe("SignupView", () => {
     await wrapper.get("#signup-email").setValue("not-an-email");
     await wrapper.get("#signup-password").setValue("long-password");
     await wrapper.get("#signup-confirm-password").setValue("different");
+
     await wrapper.get("form").trigger("submit");
     await flushPromises();
 
     expect(wrapper.get("#signup-email").attributes("aria-invalid")).toBe("true");
     expect(wrapper.get("#signup-confirm-password").attributes("aria-invalid")).toBe("true");
-    expect(registerPatient).not.toHaveBeenCalled();
+    expect(signUpPatient).not.toHaveBeenCalled();
   });
 
-  it("creates an account through the API and confirms success", async () => {
-    registerPatient.mockResolvedValue({ data: "Registration successful" });
-    const wrapper = await mountSignup();
+  it("registers through Supabase and asks the patient to confirm their email", async () => {
+    signUpPatient.mockResolvedValue({
+      user: { id: "supabase-user-id" },
+      session: null,
+    });
 
-    await wrapper.get("#signup-username").setValue("ana.patient");
-    await wrapper.get("#signup-name").setValue("Ana Patient");
-    await wrapper.get("#signup-email").setValue("ana@example.com");
-    await wrapper.get("#signup-password").setValue("long-password");
-    await wrapper.get("#signup-confirm-password").setValue("long-password");
+    const wrapper = await mountSignup();
+    await fillValidForm(wrapper);
+
     await wrapper.get("form").trigger("submit");
     await flushPromises();
 
-    expect(registerPatient).toHaveBeenCalledWith({
+    expect(signUpPatient).toHaveBeenCalledWith({
       username: "ana.patient",
       fullName: "Ana Patient",
       email: "ana@example.com",
       password: "long-password",
     });
+
     expect(wrapper.get('[role="status"]').text()).toContain(
-      "Your account was created",
+      "confirmation email",
+    );
+    expect(wrapper.get('[role="status"]').text()).toContain(
+      "Your MediQueue patient profile will be created when you first sign in.",
     );
     expect(wrapper.get("button[type='submit']").attributes("disabled")).toBeDefined();
+    expect(wrapper.text()).toContain("I have confirmed my email");
   });
 
-  it("surfaces API errors without claiming registration succeeded", async () => {
-    registerPatient.mockRejectedValue({ isAxiosError: true, response: { data: { message: "Username already exists." } } });
-    const wrapper = await mountSignup();
+  it("shows Supabase errors without claiming registration succeeded", async () => {
+    signUpPatient.mockRejectedValue(
+      new Error("Email address is already registered."),
+    );
 
-    await wrapper.get("#signup-username").setValue("ana.patient");
-    await wrapper.get("#signup-name").setValue("Ana Patient");
-    await wrapper.get("#signup-email").setValue("ana@example.com");
-    await wrapper.get("#signup-password").setValue("long-password");
-    await wrapper.get("#signup-confirm-password").setValue("long-password");
+    const wrapper = await mountSignup();
+    await fillValidForm(wrapper);
+
     await wrapper.get("form").trigger("submit");
     await flushPromises();
 
     expect(wrapper.get('[role="alert"]').text()).toContain(
-      "Username already exists.",
+      "Email address is already registered.",
     );
     expect(wrapper.find('[role="status"]').exists()).toBe(false);
   });

@@ -1,4 +1,4 @@
-﻿
+
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
@@ -13,6 +13,7 @@ import {
   type User,
   type UserRole,
 } from "@/types/models";
+
 
 function mapBackendRole(
   role: string | null | undefined,
@@ -30,12 +31,14 @@ function mapBackendRole(
     case "MEDICAL_STAFF":
       return "staff";
     case "HOSPITAL_ADMIN":
-case "SYSTEM_ADMIN":
-  return "admin";
+      return "admin";
+    case "SYSTEM_ADMIN":
+      return "admin";
     default:
       return null;
   }
 }
+
 
 function mapProfileToUser(
   profile: Awaited<ReturnType<typeof authService.getCurrentUser>>["data"],
