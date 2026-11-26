@@ -35,6 +35,7 @@ async function loadHospitals() {
   try {
     hospitals.value = await mediqueueService.getHospitals();
   } catch (error) {
+    hospitals.value = [];
     loadError.value =
       error instanceof Error ? error.message : "Unable to load hospitals.";
   } finally {
@@ -46,6 +47,7 @@ async function selectHospital() {
   selectedDepartmentId.value = null;
   departments.value = [];
   formError.value = "";
+  loadError.value = "";
   if (!selectedHospitalId.value) return;
 
   isLoadingDepartments.value = true;
@@ -111,9 +113,20 @@ onMounted(() => void loadHospitals());
       <form class="join-form" @submit.prevent="submitQueue">
         <p v-if="loadError" class="form-message form-error" role="alert">
           {{ loadError }}
-          <button type="button" class="text-link" @click="loadHospitals">
+          <button
+            type="button"
+            class="text-link"
+            @click="selectedHospitalId ? selectHospital() : loadHospitals()"
+          >
             Retry
           </button>
+        </p>
+        <p
+          v-if="!isLoadingHospitals && !loadError && hospitals.length === 0"
+          class="form-message directory-empty"
+          role="status"
+        >
+          No active hospitals are currently available for queue requests.
         </p>
         <label class="field-group">
           <span class="field-label">Hospital</span>
@@ -124,7 +137,15 @@ onMounted(() => void loadHospitals());
               @change="selectHospital"
             >
               <option :value="null">
-                {{ isLoadingHospitals ? "Loading hospitals…" : "Select hospital" }}
+                {{
+                  isLoadingHospitals
+                    ? "Loading hospitals…"
+                    : hospitals.length
+                      ? "Select hospital"
+                      : loadError
+                        ? "Hospitals unavailable"
+                        : "No active hospitals"
+                }}
               </option>
               <option v-for="hospital in hospitals" :key="hospital.id" :value="hospital.id">
                 {{ hospital.name }}

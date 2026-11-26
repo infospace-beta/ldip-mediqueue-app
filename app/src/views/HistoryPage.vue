@@ -10,6 +10,7 @@ import {
 import { medicalHistory } from "../data/patient";
 import { useAuthStore } from "@/stores/auth.store";
 import { mediqueueService } from "@/services/mediqueue.service";
+import { apiStatus } from "@/utils/errors";
 
 const auth = useAuthStore();
 const search = ref("");
@@ -22,6 +23,17 @@ const filteredHistory = computed(() =>
       .includes(search.value.toLowerCase()),
   ),
 );
+function historyErrorMessage(error) {
+  const status = apiStatus(error);
+  if (status) {
+    if (status === 401) {
+      return "Your session is not authorized to view clinical records (HTTP 401). Please sign in again.";
+    }
+    return `Unable to load medical history (HTTP ${status}). Please try again.`;
+  }
+  return "Unable to load medical history. Please try again.";
+}
+
 async function loadHistory() {
   const patientId = auth.user?.id;
   if (!patientId) {
@@ -47,8 +59,7 @@ async function loadHistory() {
       })),
     );
   } catch (error) {
-    errorMessage.value =
-      error instanceof Error ? error.message : "Unable to load medical history.";
+    errorMessage.value = historyErrorMessage(error);
   } finally {
     isLoading.value = false;
   }
@@ -96,7 +107,7 @@ onMounted(() => void loadHistory());
       <button
         class="button button-secondary"
         type="button"
-        :disabled="!filteredHistory.length"
+        :disabled="isLoading || Boolean(errorMessage) || !filteredHistory.length"
         @click="downloadSummary"
       >
         <Download :size="16" aria-hidden="true" /> Export summary
@@ -115,7 +126,20 @@ onMounted(() => void loadHistory());
             placeholder="Search records"
         /></label>
       </div>
-      <div v-if="filteredHistory.length" class="history-table-wrap">
+      <div v-if="isLoading" class="history-empty" role="status">
+        Loading your clinical records…
+      </div>
+      <div v-else-if="errorMessage" class="history-empty history-error" role="alert">
+        <ClipboardList :size="20" aria-hidden="true" />
+        <div>
+          <strong>Medical history could not be loaded</strong>
+          <p>{{ errorMessage }}</p>
+          <button class="button button-secondary button-small" type="button" @click="loadHistory">
+            Retry
+          </button>
+        </div>
+      </div>
+      <div v-else-if="filteredHistory.length" class="history-table-wrap">
         <table class="history-table">
           <thead>
             <tr>
@@ -144,13 +168,12 @@ onMounted(() => void loadHistory());
           </tbody>
         </table>
       </div>
-      <div v-else-if="isLoading" class="history-empty" role="status">
-        Loading your clinical records…
-      </div>
-      <div v-else class="history-empty">
+      <div v-else class="history-empty" role="status">
         <ClipboardList :size="20" aria-hidden="true" />
         <div>
-          <strong>No medical history available</strong>
+          <strong>{{
+            search ? "No matching records" : "No medical history available"
+          }}</strong>
           <p>
             {{
               search
@@ -165,9 +188,5 @@ onMounted(() => void loadHistory());
         from the MediQueue clinical-record service.
       </div>
     </section>
-    <p v-if="errorMessage" class="form-message form-error" role="alert">
-      {{ errorMessage }}
-      <button class="text-link" type="button" @click="loadHistory">Retry</button>
-    </p>
   </div>
 </template>

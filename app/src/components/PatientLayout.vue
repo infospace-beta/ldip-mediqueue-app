@@ -1,5 +1,5 @@
 ﻿<script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import "../assets/styles/patient-portal.css";
 import Sidebar from "./Sidebar.vue";
@@ -7,14 +7,26 @@ import TopNavbar from "./TopNavbar.vue";
 
 const route = useRoute();
 const mobileMenuOpen = ref(false);
+const sidebar = ref(null);
+const topNavbar = ref(null);
 
 const title = computed(() => route.meta.title || "Patient portal");
 
 function handleKeydown(event) {
-  if (event.key === "Escape") {
-    mobileMenuOpen.value = false;
-  }
+  if (
+    event.key !== "Escape" ||
+    !mobileMenuOpen.value ||
+    (event.target instanceof Element &&
+      event.target.closest(".confirmation-backdrop"))
+  ) return;
+  mobileMenuOpen.value = false;
 }
+
+watch(mobileMenuOpen, async (isOpen, wasOpen) => {
+  await nextTick();
+  if (isOpen) sidebar.value?.focusInitial();
+  else if (wasOpen) topNavbar.value?.focusMenuTrigger();
+});
 
 onMounted(() => {
   window.addEventListener("keydown", handleKeydown);
@@ -32,12 +44,14 @@ onUnmounted(() => {
     </a>
 
     <Sidebar
+      ref="sidebar"
       :open="mobileMenuOpen"
       @close="mobileMenuOpen = false"
     />
 
     <div class="main-shell">
       <TopNavbar
+        ref="topNavbar"
         :title="title"
         :menu-open="mobileMenuOpen"
         @toggle-menu="mobileMenuOpen = !mobileMenuOpen"

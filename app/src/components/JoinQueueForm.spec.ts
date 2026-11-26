@@ -92,6 +92,41 @@ describe("JoinQueueForm", () => {
     expect(mediqueueService.joinQueue).not.toHaveBeenCalled();
   });
 
+  it("explains when the hospital directory is successfully empty", async () => {
+    vi.mocked(mediqueueService.getHospitals).mockResolvedValueOnce([]);
+
+    const wrapper = await mountForm();
+
+    expect(wrapper.get(".directory-empty").text()).toContain(
+      "No active hospitals are currently available",
+    );
+    expect(wrapper.get("select").element).toHaveProperty("disabled", true);
+    expect(wrapper.get(".button-join").element).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(mediqueueService.joinQueue).not.toHaveBeenCalled();
+  });
+
+  it("offers a safe retry when the hospital directory request fails", async () => {
+    vi.mocked(mediqueueService.getHospitals)
+      .mockRejectedValueOnce(new Error("Directory unavailable"))
+      .mockResolvedValueOnce([]);
+
+    const wrapper = await mountForm();
+
+    expect(wrapper.get('[role="alert"]').text()).toContain(
+      "Directory unavailable",
+    );
+    await wrapper.get('[role="alert"] button').trigger("click");
+    await flushPromises();
+
+    expect(mediqueueService.getHospitals).toHaveBeenCalledTimes(2);
+    expect(wrapper.get(".directory-empty").text()).toContain(
+      "No active hospitals are currently available",
+    );
+  });
+
   it("loads departments and submits a queue request", async () => {
     const wrapper = await mountForm();
 

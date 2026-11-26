@@ -22,6 +22,7 @@ const isLoading = ref(true);
 const isSubmitting = ref(false);
 const errorMessage = ref("");
 const notice = ref("");
+const hospitalDirectoryFailed = ref(false);
 
 async function loadEmergencyInformation() {
   const patientId = auth.user?.id;
@@ -36,8 +37,11 @@ async function loadEmergencyInformation() {
     mediqueueService.getHospitals(),
     mediqueueService.getPatientEmergencyCases(patientId),
   ]);
+  hospitalDirectoryFailed.value = hospitalResult.status === "rejected";
   if (hospitalResult.status === "fulfilled") {
     hospitals.value = hospitalResult.value;
+  } else {
+    hospitals.value = [];
   }
   if (caseResult.status === "fulfilled") {
     cases.value = caseResult.value;
@@ -106,6 +110,13 @@ onMounted(() => void loadEmergencyInformation());
         Retry
       </button>
     </p>
+    <p
+      v-if="!isLoading && !hospitalDirectoryFailed && hospitals.length === 0"
+      class="form-message directory-empty"
+      role="status"
+    >
+      No active hospitals are currently available for emergency reports.
+    </p>
     <output v-if="notice" class="form-message service-notice" role="status">
       {{ notice }}
     </output>
@@ -119,34 +130,52 @@ onMounted(() => void loadEmergencyInformation());
           </div>
           <span class="contact-shield"><HeartPulse :size="20" aria-hidden="true" /></span>
         </div>
-        <form class="emergency-report-form" @submit.prevent="reportEmergency">
-          <label>
+        <form
+          class="emergency-report-form patient-form-grid"
+          @submit.prevent="reportEmergency"
+        >
+          <label class="patient-form-field" for="emergency-hospital">
             <span>Hospital</span>
-            <select v-model.number="hospitalId" required :disabled="isLoading">
+            <select
+              id="emergency-hospital"
+              v-model.number="hospitalId"
+              required
+              :disabled="isLoading || hospitals.length === 0"
+            >
               <option :value="null">Select hospital</option>
               <option v-for="hospital in hospitals" :key="hospital.id" :value="hospital.id">
                 {{ hospital.name }}
               </option>
             </select>
           </label>
-          <label>
+          <label class="patient-form-field" for="emergency-title">
             <span>Case title</span>
-            <input v-model="title" maxlength="150" required />
+            <input id="emergency-title" v-model="title" maxlength="150" required />
           </label>
-          <label>
+          <label class="patient-form-field patient-form-span-all" for="emergency-description">
             <span>Description</span>
-            <textarea v-model="description" maxlength="2000" rows="4" required></textarea>
+            <textarea
+              id="emergency-description"
+              v-model="description"
+              maxlength="2000"
+              rows="4"
+              required
+            ></textarea>
           </label>
-          <label>
+          <label class="patient-form-field" for="emergency-severity">
             <span>Severity</span>
-            <select v-model="severity">
+            <select id="emergency-severity" v-model="severity">
               <option value="LOW">Low</option>
               <option value="MEDIUM">Medium</option>
               <option value="HIGH">High</option>
               <option value="CRITICAL">Critical</option>
             </select>
           </label>
-          <button class="button button-primary" type="submit" :disabled="isSubmitting || isLoading">
+          <button
+            class="button button-primary patient-form-span-all"
+            type="submit"
+            :disabled="isSubmitting || isLoading || hospitals.length === 0"
+          >
             {{ isSubmitting ? "Submitting…" : "Submit case report" }}
           </button>
         </form>

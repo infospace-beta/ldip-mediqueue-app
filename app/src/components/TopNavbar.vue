@@ -22,6 +22,7 @@ const props = defineProps<{ title?: string; menuOpen?: boolean }>();
 defineEmits<{ (event: "toggle-menu"): void }>();
 const router = useRouter();
 const topbar = ref<HTMLElement | null>(null);
+const menuTrigger = ref<HTMLButtonElement | null>(null);
 const notificationTrigger = ref<HTMLButtonElement | null>(null);
 const profileTrigger = ref<HTMLButtonElement | null>(null);
 const search = ref("");
@@ -92,11 +93,18 @@ function closePopover() {
     profileTrigger.value?.focus();
   }
 }
+
+function focusMenuTrigger() {
+  menuTrigger.value?.focus();
+}
+
+defineExpose({ focusMenuTrigger });
 </script>
 
 <template>
   <header ref="topbar" class="topbar" @keydown.esc.prevent.stop="closePopover">
     <button
+      ref="menuTrigger"
       class="icon-button mobile-menu-trigger"
       type="button"
       :aria-label="props.menuOpen ? 'Close navigation' : 'Open navigation'"

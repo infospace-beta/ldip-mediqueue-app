@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from "vue";
 import { useRoute } from "vue-router";
 import {
   Activity,
@@ -15,9 +16,12 @@ import {
 } from "@lucide/vue";
 import LogoutAction from "./common/LogoutAction.vue";
 
-defineProps({ open: Boolean });
+const props = defineProps({ open: Boolean });
 const emit = defineEmits(["close"]);
 const route = useRoute();
+const sidebarElement = ref(null);
+const closeButton = ref(null);
+const logoPath = "/mediqueue-logo.png";
 const primary = [
   { label: "Dashboard", to: "/patient/dashboard", icon: LayoutDashboard },
   {
@@ -38,6 +42,33 @@ const care = [
 function isActive(item) {
   return route.path === item.to;
 }
+
+function focusInitial() {
+  closeButton.value?.focus();
+}
+
+function handleKeydown(event) {
+  if (!props.open || event.key !== "Tab" || !sidebarElement.value) return;
+
+  const focusable = Array.from(
+    sidebarElement.value.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  );
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  const active = document.activeElement;
+
+  if (event.shiftKey && (active === first || !sidebarElement.value.contains(active))) {
+    event.preventDefault();
+    last?.focus();
+  } else if (!event.shiftKey && (active === last || !sidebarElement.value.contains(active))) {
+    event.preventDefault();
+    first?.focus();
+  }
+}
+
+defineExpose({ focusInitial });
 </script>
 
 <template>
@@ -49,18 +80,21 @@ function isActive(item) {
   ></div>
   <aside
     id="patient-sidebar"
+    ref="sidebarElement"
     class="sidebar"
     :class="{ 'sidebar-open': open }"
     aria-label="Patient navigation"
+    @keydown="handleKeydown"
   >
     <div class="brand-row">
       <RouterLink class="brand" to="/patient/dashboard" @click="emit('close')">
-        <img class="brand-mark brand-image" src="/mediqueue-logo.png" alt="" />
+        <img class="brand-mark brand-image" :src="logoPath" alt="" />
         <span class="brand-copy"
           ><strong>MEDIQUEUE</strong><small>PATIENT CARE PORTAL</small></span
         >
       </RouterLink>
       <button
+        ref="closeButton"
         class="icon-button sidebar-close"
         type="button"
         aria-label="Close navigation"
